@@ -2,75 +2,44 @@
 
 import React from "react";
 import { TIERS } from "../lib/constants";
-import { Eye, Layers, Sliders } from "lucide-react";
+import { Eye } from "lucide-react";
 
-export default function SeatLegend({ showHeatmap, onToggleHeatmap }) {
+export default function SeatLegend() {
   return (
-    <div className="w-full max-w-5xl mx-auto mb-4 px-4 py-2.5 rounded-xl bg-[#101217] border border-[#232734] flex flex-wrap items-center justify-between gap-3 select-none font-mono text-[11px]">
-      {/* Tier Indicators */}
-      <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-slate-300">
-        {showHeatmap ? (
-          <div className="flex items-center gap-3">
-            <span className="text-slate-500 font-bold uppercase text-[10px]">
-              TIERS:
-            </span>
-            {Object.entries(TIERS).map(([key, tier]) => (
-              <div key={key} className="flex items-center gap-1.5">
-                <span
-                  className="w-2.5 h-2.5 rounded-xs"
-                  style={{
-                    backgroundColor: tier.color,
-                  }}
-                ></span>
-                <span className="font-bold text-slate-200">
-                  {tier.badge} <span className="text-slate-500">(${tier.price})</span>
-                </span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-xs bg-[#10B981]"></span>
-            <span className="text-slate-200 font-bold">AVAILABLE</span>
-          </div>
-        )}
-
-        {/* State Indicators */}
-        <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-xs bg-[#38BDF8] shadow-[0_0_5px_#38BDF8]"></span>
-          <span className="font-bold text-[#38BDF8]">YOUR_HOLD</span>
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-xs bg-[#FF9500]"></span>
-          <span className="text-[#FF9500] font-bold">LOCKED</span>
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-xs bg-[#333742]"></span>
-          <span className="text-slate-500">BOOKED</span>
-        </div>
-
-        {/* Live Presence Indicator */}
-        <div className="flex items-center gap-1.5">
-          <span className="px-1.5 py-0.2 rounded bg-purple-900/50 border border-purple-500/40 text-purple-300 text-[10px] font-bold">
-            👀 LIVE
-          </span>
-          <span className="text-purple-300 text-[10px]">PRESENCE</span>
-        </div>
+    <div className="w-full max-w-5xl mx-auto mb-4 py-2.5 px-4 rounded-xl bg-[#252C3B] border border-[#323B4E] flex flex-wrap items-center justify-center gap-5 text-xs text-slate-300 select-none">
+      {/* Available */}
+      <div className="flex items-center gap-2">
+        <div className="w-5 h-5 rounded border border-[#404C63] bg-transparent"></div>
+        <span>Available</span>
       </div>
 
-      {/* Heatmap Toggle */}
-      <button
-        onClick={onToggleHeatmap}
-        className={`te-button px-2.5 py-1 rounded text-[10px] font-bold uppercase transition ${
-          showHeatmap
-            ? "text-[#FF9500] border-[#FF9500]/40"
-            : "text-slate-400 border-slate-700"
-        }`}
-      >
-        <span>HEATMAP: [{showHeatmap ? "ACTIVE" : "OFF"}]</span>
-      </button>
+      {/* Selected (Your Hold) */}
+      <div className="flex items-center gap-2">
+        <div className="w-5 h-5 rounded bg-[#2DC44D] text-white flex items-center justify-center font-bold text-[10px]">
+          ✓
+        </div>
+        <span className="font-bold text-[#2DC44D]">Selected</span>
+      </div>
+
+      {/* Held by Another */}
+      <div className="flex items-center gap-2">
+        <div className="w-5 h-5 rounded bg-amber-500/30 border border-amber-500"></div>
+        <span className="text-amber-300">Reserved by other</span>
+      </div>
+
+      {/* Sold */}
+      <div className="flex items-center gap-2">
+        <div className="w-5 h-5 rounded bg-[#2C3446] border border-[#364056]"></div>
+        <span className="text-slate-500">Sold</span>
+      </div>
+
+      {/* Live Presence */}
+      <div className="flex items-center gap-1.5 pl-3 border-l border-[#323B4E]">
+        <span className="px-1.5 py-0.5 rounded-full bg-purple-600 text-white text-[10px] font-bold">
+          👀 1
+        </span>
+        <span className="text-purple-300">Live Presence</span>
+      </div>
     </div>
   );
 }

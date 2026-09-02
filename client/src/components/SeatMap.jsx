@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Lock, Clock, Eye, Sliders, Radio, Cpu, Terminal } from "lucide-react";
+import { Lock, Clock, Eye, Info } from "lucide-react";
 import { TIERS } from "../lib/constants";
 
 export default function SeatMap({
@@ -30,341 +30,201 @@ export default function SeatMap({
     onSeatLeave(seat.id);
   };
 
+  // Group seats by tier to render BookMyShow section headers
+  const sections = [
+    { name: "RECLINER", price: 450, rows: ["A", "B"] },
+    { name: "PRIME", price: 290, rows: ["C", "D", "E"] },
+    { name: "CLASSIC", price: 180, rows: ["F", "G", "H"] },
+  ];
+
   return (
-    <div className="relative w-full max-w-5xl mx-auto select-none font-mono">
-      {/* Precision Hardware LCD Telemetry HUD */}
-      <div className="mb-3 h-13 w-full flex items-center justify-between px-4 py-2 rounded-xl bg-[#101217] border border-[#232734] shadow-inner text-xs">
+    <div className="relative w-full max-w-5xl mx-auto select-none">
+      {/* Interactive Hover Tooltip Strip */}
+      <div className="mb-3 h-10 w-full flex items-center justify-between px-4 py-2 rounded-lg bg-[#252C3B] border border-[#323B4E] text-xs text-slate-300">
         {hoveredSeat ? (
-          <div className="w-full flex items-center justify-between gap-4 animate-in fade-in duration-100">
-            <div className="flex items-center gap-3">
-              <div
-                className="w-7 h-7 rounded bg-[#181B24] border border-[#343A4C] flex items-center justify-center font-bold text-xs shadow-inner"
-                style={{ color: TIERS[hoveredSeat.tier]?.color || "#FF9500" }}
-              >
-                {hoveredSeat.id}
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-white text-xs">
-                    {hoveredSeat.section || "SECTOR A"}
-                  </span>
-                  <span className="text-[10px] text-slate-400">
-                    // ${hoveredSeat.price}.00 USD
-                  </span>
-                  <span
-                    className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-black/40 border border-white/10"
-                    style={{ color: TIERS[hoveredSeat.tier]?.color }}
-                  >
-                    {TIERS[hoveredSeat.tier]?.badge}
-                  </span>
-                </div>
-                <div className="text-[10px] text-slate-400">
-                  {hoveredSeat.sightline || "0.1ms Phase Coherence • Direct Line"}
-                </div>
-              </div>
+          <div className="w-full flex items-center justify-between animate-in fade-in duration-100">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-white text-sm">
+                Seat {hoveredSeat.label}
+              </span>
+              <span className="text-slate-400">({hoveredSeat.section})</span>
+              <span className="font-bold text-[#2DC44D] ml-2">
+                ₹{hoveredSeat.price}.00
+              </span>
             </div>
 
-            <div className="flex items-center gap-3 text-[10px]">
+            <div className="flex items-center gap-3">
               {presenceMap[hoveredSeat.id] > 0 && (
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-purple-950/40 border border-purple-500/40 text-purple-300">
+                <span className="px-2 py-0.5 rounded bg-purple-900/60 border border-purple-400/50 text-purple-300 text-[11px] font-semibold flex items-center gap-1">
                   <Eye className="w-3 h-3" />
-                  <span>{presenceMap[hoveredSeat.id]} MONITORS</span>
-                </div>
+                  <span>{presenceMap[hoveredSeat.id]} viewing</span>
+                </span>
               )}
-              <div className="text-slate-400">
-                STATE:{" "}
-                <span
-                  className={`font-bold ${
+              <span className="text-[11px]">
+                Status:{" "}
+                <strong
+                  className={
                     hoveredSeat.status === "booked"
-                      ? "text-rose-400"
+                      ? "text-slate-500"
                       : hoveredSeat.status === "held"
                       ? "text-amber-400"
-                      : "text-emerald-400"
-                  }`}
+                      : "text-[#2DC44D]"
+                  }
                 >
-                  [{hoveredSeat.status?.toUpperCase()}]
-                </span>
-              </div>
+                  {hoveredSeat.status === "booked"
+                    ? "SOLD"
+                    : hoveredSeat.status === "held"
+                    ? "RESERVED"
+                    : "AVAILABLE"}
+                </strong>
+              </span>
             </div>
           </div>
         ) : (
-          <div className="w-full flex items-center justify-between text-[11px] text-slate-400">
-            <div className="flex items-center gap-2">
-              <Terminal className="w-3.5 h-3.5 text-[#FF9500]" />
-              <span>HOVER MODULAR POD TO INSPECT PHASE DELAY & OCCUPANCY</span>
-            </div>
-            <div className="hidden sm:flex items-center gap-3 text-slate-500 text-[10px]">
-              <span>[RADIAL POLAR ARRAY]</span>
-              <span>•</span>
-              <span>[POLAR ORIGIN: 0x450,-120]</span>
-            </div>
+          <div className="flex items-center gap-2 text-slate-400 text-xs">
+            <Info className="w-3.5 h-3.5 text-[#00B9F5]" />
+            <span>Click any seat to lock it. Instant confirmation with zero double-booking.</span>
           </div>
         )}
       </div>
 
-      {/* Main Hardware Chassis Faceplate */}
-      <div className="relative w-full rounded-2xl bg-[#101217] border border-[#252936] p-6 sm:p-7 shadow-2xl overflow-hidden">
-        {/* Hardware Corner Hex Rivet Screws */}
-        <div className="te-screw absolute top-3 left-3"></div>
-        <div className="te-screw absolute top-3 right-3"></div>
-        <div className="te-screw absolute bottom-3 left-3"></div>
-        <div className="te-screw absolute bottom-3 right-3"></div>
-
-        <svg
-          viewBox="0 0 900 530"
-          className="w-full h-auto drop-shadow-xl"
-          style={{ maxHeight: "660px" }}
-        >
-          {/* Polar Radar Range Arcs */}
-          <path
-            d="M 140,240 A 480,480 0 0,0 760,240"
-            fill="none"
-            stroke="#1D212B"
-            strokeDasharray="2 4"
-            strokeWidth="1.2"
-          />
-          <path
-            d="M 80,370 A 610,610 0 0,0 820,370"
-            fill="none"
-            stroke="#1D212B"
-            strokeDasharray="2 4"
-            strokeWidth="1.2"
-          />
-
-          {/* Sector Boundary Label Coordinates */}
-          <text x="80" y="195" fill="#FF9500" fontSize="9" fontWeight="800" opacity="0.8" fontFamily="monospace">
-            [SECTOR A-B // VIP FIELD]
-          </text>
-          <text x="50" y="325" fill="#E2E8F0" fontSize="9" fontWeight="800" opacity="0.6" fontFamily="monospace">
-            [SECTOR C-E // CONSOLE ROW]
-          </text>
-          <text x="35" y="460" fill="#8E95A5" fontSize="9" fontWeight="800" opacity="0.6" fontFamily="monospace">
-            [SECTOR F-H // PERIMETER]
-          </text>
-
-          {/* Center Angle Crosshair Marks */}
-          <text x="450" y="515" fill="#3E4456" fontSize="8" fontWeight="700" textAnchor="middle" fontFamily="monospace">
-            + 00.00° CENTER AXIS
-          </text>
-          <text x="300" y="515" fill="#3E4456" fontSize="8" fontWeight="700" textAnchor="middle" fontFamily="monospace">
-            - 18.20° L-AISLE
-          </text>
-          <text x="600" y="515" fill="#3E4456" fontSize="8" fontWeight="700" textAnchor="middle" fontFamily="monospace">
-            + 18.20° R-AISLE
-          </text>
-
-          {/* Render Modular Hardware Pods */}
-          {seats.map((seat) => {
-            const isMine = seat.isMine || (seat.heldBy && seat.heldBy === myUserId);
-            const isHeldByOther = seat.status === "held" && !isMine;
-            const isBooked = seat.status === "booked";
-            const isAvailable = seat.status === "available";
-
-            const viewerCount = presenceMap[seat.id] || 0;
-            const tierInfo = TIERS[seat.tier] || TIERS.STANDARD;
-
-            // Teenage Engineering Modular Capsule Styling
-            let podBodyColor = "#161922";
-            let podBorderColor = "#2C313F";
-            let diodeColor = tierInfo.color;
-            let cursor = "cursor-pointer";
-
-            if (isBooked) {
-              podBodyColor = "#0A0B0E";
-              podBorderColor = "#1B1D24";
-              diodeColor = "#333742";
-              cursor = "cursor-not-allowed opacity-30";
-            } else if (isMine) {
-              podBodyColor = "#0C2333";
-              podBorderColor = "#38BDF8";
-              diodeColor = "#38BDF8";
-            } else if (isHeldByOther) {
-              podBodyColor = "#281708";
-              podBorderColor = "#FF9500";
-              diodeColor = "#FF9500";
-              cursor = "cursor-not-allowed";
-            } else if (isAvailable) {
-              if (showHeatmap) {
-                podBorderColor = tierInfo.color;
-                podBodyColor = "#181B24";
-              } else {
-                podBorderColor = "#10B981";
-                podBodyColor = "#161922";
-                diodeColor = "#10B981";
-              }
-            }
-
-            const rot = seat.rotation || 0;
-
-            return (
-              <g
-                key={seat.id}
-                transform={`translate(${seat.x}, ${seat.y}) rotate(${rot})`}
-                className={`transition-all duration-150 ${cursor} group`}
-                onClick={() => onSeatClick(seat)}
-                onMouseEnter={() => handleMouseEnter(seat)}
-                onMouseLeave={() => handleMouseLeave(seat)}
-              >
-                {/* CNC Bezel Frame */}
-                <rect
-                  x="-15"
-                  y="-10"
-                  width="30"
-                  height="30"
-                  rx="4"
-                  fill={podBodyColor}
-                  stroke={podBorderColor}
-                  strokeWidth={isMine ? "2" : "1.2"}
-                  className="transition-all duration-150 group-hover:brightness-125"
-                />
-
-                {/* Tactile Push Pad Inset */}
-                <rect
-                  x="-11"
-                  y="-6"
-                  width="22"
-                  height="16"
-                  rx="2"
-                  fill="#0B0C10"
-                  stroke="#1E222D"
-                  strokeWidth="0.8"
-                />
-
-                {/* Status Indicator Diode (LED) */}
-                <circle
-                  cx="0"
-                  cy="14"
-                  r="2"
-                  fill={diodeColor}
-                  opacity={isBooked ? 0.3 : 1}
-                />
-
-                {/* Engraved Monospace Pod Label */}
-                {isBooked ? (
-                  <text
-                    x="0"
-                    y="5"
-                    fill="#475569"
-                    fontSize="7"
-                    fontWeight="800"
-                    textAnchor="middle"
-                    fontFamily="monospace"
-                  >
-                    BKD
-                  </text>
-                ) : isMine ? (
-                  <text
-                    x="0"
-                    y="5"
-                    fill="#38BDF8"
-                    fontSize="8"
-                    fontWeight="900"
-                    textAnchor="middle"
-                    fontFamily="monospace"
-                  >
-                    YOU
-                  </text>
-                ) : isHeldByOther ? (
-                  <text
-                    x="0"
-                    y="5"
-                    fill="#FF9500"
-                    fontSize="7"
-                    fontWeight="800"
-                    textAnchor="middle"
-                    fontFamily="monospace"
-                  >
-                    LCK
-                  </text>
-                ) : (
-                  <text
-                    x="0"
-                    y="5"
-                    fill="#F1F5F9"
-                    fontSize="8"
-                    fontWeight="700"
-                    textAnchor="middle"
-                    fontFamily="monospace"
-                    className="group-hover:fill-white"
-                  >
-                    {seat.label}
-                  </text>
-                )}
-
-                {/* LIVE PRESENCE BADGE (Ephemeral Viewer Count) */}
-                {viewerCount > 0 && (
-                  <g transform="translate(0, -18)">
-                    <rect
-                      x="-13"
-                      y="-7"
-                      width="26"
-                      height="14"
-                      rx="3"
-                      fill="#7C3AED"
-                      stroke="#C4B5FD"
-                      strokeWidth="1"
-                    />
-                    <text
-                      x="0"
-                      y="3"
-                      fill="#FFFFFF"
-                      fontSize="8"
-                      fontWeight="bold"
-                      textAnchor="middle"
-                      fontFamily="monospace"
-                    >
-                      👀 {viewerCount}
-                    </text>
-                  </g>
-                )}
-
-                {/* ACTIVE HOLD TIME TAG ON OPERATOR POD */}
-                {isMine && seat.ttlSeconds > 0 && (
-                  <g transform="translate(0, 28)">
-                    <rect
-                      x="-18"
-                      y="-6"
-                      width="36"
-                      height="13"
-                      rx="2"
-                      fill="#0C2333"
-                      stroke="#38BDF8"
-                      strokeWidth="1"
-                    />
-                    <text
-                      x="0"
-                      y="3.5"
-                      fill="#38BDF8"
-                      fontSize="8"
-                      fontWeight="bold"
-                      textAnchor="middle"
-                      fontFamily="monospace"
-                    >
-                      {Math.floor(seat.ttlSeconds / 60)}:
-                      {(seat.ttlSeconds % 60).toString().padStart(2, "0")}
-                    </text>
-                  </g>
-                )}
-              </g>
-            );
-          })}
-        </svg>
-
-        {/* Bottom Hardware Spec Strip */}
-        <div className="mt-4 pt-3 border-t border-[#1F232F] flex flex-wrap items-center justify-between text-[10px] text-slate-500 font-mono gap-2">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#FF9500] animate-pulse"></span>
-            <span className="text-slate-400 font-bold">LOCK_ENGINE: REDIS_SET_NX_EX_300</span>
+      {/* Main Cinema Seating Canvas */}
+      <div className="w-full rounded-2xl bg-[#1C222F] border border-[#2B3446] p-6 sm:p-8 shadow-xl overflow-hidden">
+        {/* Tier 1: RECLINER */}
+        <div className="mb-6">
+          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider pb-2 mb-3 border-b border-[#2C3648] flex items-center justify-between">
+            <span className="text-[#F84464] font-extrabold">RECLINER - ₹450.00</span>
+            <span className="text-[11px] text-slate-500 font-normal">Motorized Plush Leather</span>
           </div>
-          <div>
-            <span>POLAR ARRAY: 72 PODS</span>
-            <span className="mx-2">•</span>
-            <span>CHAMBER: 01-A</span>
-            <span className="mx-2">•</span>
-            <span>STORE: NEON_POSTGRES</span>
+          {renderRowGroup(["A", "B"])}
+        </div>
+
+        {/* Tier 2: PRIME */}
+        <div className="mb-6">
+          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider pb-2 mb-3 border-b border-[#2C3648] flex items-center justify-between">
+            <span className="text-[#2DC44D] font-extrabold">PRIME - ₹290.00</span>
+            <span className="text-[11px] text-slate-500 font-normal">Optimal Center Field</span>
           </div>
+          {renderRowGroup(["C", "D", "E"])}
+        </div>
+
+        {/* Tier 3: CLASSIC */}
+        <div className="mb-10">
+          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider pb-2 mb-3 border-b border-[#2C3648] flex items-center justify-between">
+            <span className="text-[#00B9F5] font-extrabold">CLASSIC - ₹180.00</span>
+            <span className="text-[11px] text-slate-500 font-normal">High Back Support</span>
+          </div>
+          {renderRowGroup(["F", "G", "H"])}
+        </div>
+
+        {/* The Iconic BookMyShow Cinema Screen at Bottom */}
+        <div className="mt-12 pt-6 flex flex-col items-center justify-center">
+          <div className="w-4/5 sm:w-3/5 h-4 border-t-4 border-[#00B9F5] rounded-t-[100px] shadow-[0_-10px_20px_rgba(0,185,245,0.3)]"></div>
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-2">
+            All eyes this way please! Screen this way
+          </p>
         </div>
       </div>
     </div>
   );
+
+  function renderRowGroup(rowLetters) {
+    return (
+      <div className="space-y-3">
+        {rowLetters.map((rowLetter) => {
+          const rowSeats = seats.filter((s) => s.row === rowLetter);
+          // Split into 3 columns (left 3, center 3, right 3) for the aisles
+          const leftCol = rowSeats.filter((s) => s.col <= 3);
+          const centerCol = rowSeats.filter((s) => s.col >= 4 && s.col <= 6);
+          const rightCol = rowSeats.filter((s) => s.col >= 7);
+
+          return (
+            <div key={rowLetter} className="flex items-center justify-center gap-2 sm:gap-4">
+              {/* Left Row Letter */}
+              <span className="w-5 text-center text-xs font-bold text-slate-500 font-mono">
+                {rowLetter}
+              </span>
+
+              {/* Left Block (Seats 1-3) */}
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                {leftCol.map((seat) => renderSeatBox(seat))}
+              </div>
+
+              {/* Aisle Gap 1 */}
+              <div className="w-4 sm:w-8"></div>
+
+              {/* Center Block (Seats 4-6) */}
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                {centerCol.map((seat) => renderSeatBox(seat))}
+              </div>
+
+              {/* Aisle Gap 2 */}
+              <div className="w-4 sm:w-8"></div>
+
+              {/* Right Block (Seats 7-9) */}
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                {rightCol.map((seat) => renderSeatBox(seat))}
+              </div>
+
+              {/* Right Row Letter */}
+              <span className="w-5 text-center text-xs font-bold text-slate-500 font-mono">
+                {rowLetter}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  function renderSeatBox(seat) {
+    const isMine = seat.isMine || (seat.heldBy && seat.heldBy === myUserId);
+    const isHeldByOther = seat.status === "held" && !isMine;
+    const isBooked = seat.status === "booked";
+    const isAvailable = seat.status === "available";
+    const viewerCount = presenceMap[seat.id] || 0;
+
+    let boxStyles = "bg-white border-[#2DC44D] text-[#2DC44D] hover:bg-[#2DC44D] hover:text-white cursor-pointer";
+
+    if (isBooked) {
+      boxStyles = "bg-[#2C3446] border-[#364056] text-slate-600 cursor-not-allowed opacity-50";
+    } else if (isMine) {
+      boxStyles = "bg-[#2DC44D] border-[#2DC44D] text-white font-black shadow-lg shadow-emerald-900/50 bms-selected-seat cursor-pointer";
+    } else if (isHeldByOther) {
+      boxStyles = "bg-amber-500/20 border-amber-500 text-amber-300 cursor-not-allowed";
+    } else if (isAvailable) {
+      // Classic BMS style: clean white box with light border or tier color border
+      boxStyles = "bg-transparent border-[#404C63] text-slate-200 hover:border-[#2DC44D] hover:bg-[#2DC44D]/10 cursor-pointer";
+    }
+
+    return (
+      <div
+        key={seat.id}
+        onClick={() => onSeatClick(seat)}
+        onMouseEnter={() => handleMouseEnter(seat)}
+        onMouseLeave={() => handleMouseLeave(seat)}
+        className="relative group transition-transform active:scale-95"
+      >
+        <div
+          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-md border flex items-center justify-center text-[11px] font-bold transition-all ${boxStyles}`}
+        >
+          {isBooked ? "" : isMine ? "✓" : seat.col}
+        </div>
+
+        {/* Live Presence Badge on Top */}
+        {viewerCount > 0 && (
+          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-1 rounded-full bg-purple-600 text-white text-[9px] font-bold shadow-md animate-bounce pointer-events-none whitespace-nowrap">
+            👀 {viewerCount}
+          </div>
+        )}
+
+        {/* Active Countdown Tag on User's Held Seat */}
+        {isMine && seat.ttlSeconds > 0 && (
+          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-1 py-0.2 rounded bg-[#2DC44D] text-white text-[9px] font-bold shadow pointer-events-none whitespace-nowrap">
+            {Math.floor(seat.ttlSeconds / 60)}:{(seat.ttlSeconds % 60).toString().padStart(2, "0")}
+          </div>
+        )}
+      </div>
+    );
+  }
 }

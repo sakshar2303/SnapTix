@@ -1,32 +1,32 @@
 export const TIERS = {
   VIP: {
-    name: "PRIME ACOUSTIC POD",
-    price: 150,
-    color: "#FF9500", // Phosphor Amber / Teenage Engineering Orange
-    accentHex: "#FFB03A",
-    glowColor: "rgba(255, 149, 0, 0.4)",
-    badge: "VIP FIELD",
-    sightline: "0.1ms Phase Coherence • Direct Transducer Line",
-    features: ["Dedicated Line Out Monitoring", "Zero-Reflection Position", "Hardware Console Access"],
+    id: "RECLINER",
+    name: "RECLINER",
+    price: 450,
+    currencySymbol: "₹",
+    color: "#F84464", // BMS Crimson Red
+    badge: "RECLINER",
+    rows: ["A", "B"],
+    description: "Plush motorized leather recliners with food & beverage service",
   },
   PREFERRED: {
-    name: "MID-FIELD CONSOLE",
-    price: 95,
-    color: "#E2E8F0", // Titanium Bone White
-    accentHex: "#FFFFFF",
-    glowColor: "rgba(226, 232, 240, 0.3)",
-    badge: "MID-FIELD",
-    sightline: "Balanced Binaural Center • Elevated Console Plane",
-    features: ["Binaural Stereo Sweet Spot", "Expanded Console Stance", "Priority Signal Ingest"],
+    id: "PRIME",
+    name: "PRIME",
+    price: 290,
+    currencySymbol: "₹",
+    color: "#2DC44D", // BMS Green
+    badge: "PRIME",
+    rows: ["C", "D", "E"],
+    description: "Optimal center viewing angle & direct acoustic field",
   },
   STANDARD: {
-    name: "PERIMETER ARRAY",
-    price: 55,
-    color: "#8E95A5", // Industrial Concrete Slate
-    accentHex: "#94A3B8",
-    glowColor: "rgba(142, 149, 165, 0.25)",
-    badge: "PERIMETER",
-    sightline: "Ambient Reverb Boundary • Spatial Diffusion Vista",
-    features: ["Panoramic Chamber Vista", "Ambient Soundfield Overlook"],
+    id: "CLASSIC",
+    name: "CLASSIC",
+    price: 180,
+    currencySymbol: "₹",
+    color: "#00B9F5", // Cyan Blue
+    badge: "CLASSIC",
+    rows: ["F", "G", "H"],
+    description: "Standard cinema seating with high back support",
   },
 };

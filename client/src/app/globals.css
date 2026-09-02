@@ -2,110 +2,59 @@
 
 @layer base {
   :root {
-    --bg-basalt: #0C0D11;
-    --panel-surface: #13151B;
-    --panel-border: #232731;
-    --hairline-silver: rgba(255, 255, 255, 0.12);
-    --amber-phosphor: #FF9500;
+    --bms-red: #F84464;
+    --bms-green: #2DC44D;
+    --bms-bg: #1F2533;
+    --bms-card: #222938;
+    --bms-dark: #131823;
   }
 
   body {
-    background-color: var(--bg-basalt);
-    color: #E2E8F0;
-    font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    letter-spacing: -0.01em;
+    background-color: #1F2533;
+    color: #F5F5FA;
+    font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
   }
 }
 
-/* Teenage Engineering Technical Dot Grid */
-.te-grid-bg {
-  background-color: #0C0D11;
-  background-image: radial-gradient(#262A35 1px, transparent 1px);
-  background-size: 20px 20px;
+/* BMS Cinema Screen Curve */
+.bms-screen-curve {
+  position: relative;
+  width: 100%;
+  height: 24px;
+  border-top: 4px solid #00B9F5;
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  box-shadow: 0 -8px 25px rgba(0, 185, 245, 0.4);
 }
 
-/* Hardware Faceplate Panel */
-.te-chassis {
-  background: #14161C;
-  border: 1px solid #282C37;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 24px rgba(0, 0, 0, 0.6);
-}
-
-.te-chassis-inset {
-  background: #0E0F14;
-  border: 1px solid #1F222B;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-/* Tactile Hardware Push Button */
-.te-button {
-  background: #1C1F27;
-  border: 1px solid #363B49;
-  box-shadow: 0 2px 0 #101216, inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  transition: all 0.1s ease-in-out;
-}
-
-.te-button:active {
-  transform: translateY(1px);
-  box-shadow: 0 1px 0 #101216, inset 0 2px 4px rgba(0, 0, 0, 0.4);
-}
-
-.te-button-accent {
-  background: #FF9500;
-  color: #000000;
-  font-weight: 800;
-  border: 1px solid #FFAE33;
-  box-shadow: 0 2px 0 #995A00, inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.te-button-accent:active {
-  transform: translateY(1px);
-  box-shadow: 0 1px 0 #995A00;
-}
-
-/* Precision Fastener (Corner Hex Screws) */
-.te-screw {
+/* BMS Custom Scrollbar */
+::-webkit-scrollbar {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
-  background: #252833;
-  border: 1px solid #3E4354;
-  box-shadow: inset 0 0.5px 0.5px rgba(255, 255, 255, 0.2);
-  position: relative;
-}
-.te-screw::after {
-  content: "";
-  position: absolute;
-  top: 2px;
-  left: 1px;
-  right: 1px;
-  height: 1px;
-  background: #14161C;
-}
-
-/* CRT / Phosphor Display Filter */
-.te-display {
-  background: #080A0D;
-  border: 1px solid #20242E;
-  color: #FF9500;
-  font-family: var(--font-geist-mono), monospace;
-  text-shadow: 0 0 6px rgba(255, 149, 0, 0.5);
-}
-
-/* Custom Sleek Monospace Scrollbar */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #0C0D11;
+  background: #131823;
 }
 ::-webkit-scrollbar-thumb {
-  background: #262A36;
+  background: #33394D;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3A4050;
+  background: #49516A;
+}
+
+/* Pulsing Hold Ring */
+@keyframes bms-hold-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(45, 196, 77, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(45, 196, 77, 0);
+  }
+}
+
+.bms-selected-seat {
+  animation: bms-hold-pulse 2s infinite;
 }

@@ -1,84 +1,84 @@
-// Teenage Engineering / Precision Hardware Theme
-// 8 curved radial amphitheater rows (A-H), 9 acoustic pods per row = 72 seats total
-// Radiating from the Acoustic Emitter Stage with precision CAD coordinates
+// BookMyShow Style Cinema Seating Layout
+// Cinema Venue: PVR INOX IMAX 3D, Phoenix Marketcity • Audi 4
+// 3 Tiers: RECLINER (Luxury), PRIME (Middle), CLASSIC (Front)
+// 8 Rows (A-H), 9 Seats per row = 72 seats total
 
 export const VENUE_INFO = {
-  id: "venue-synth-lab",
-  name: "SYNTH LAB 01 • FIELD ACOUSTICS HALL",
-  location: "CH-1004 RESEARCH CAMPUS • SOUND EMITTER GRID",
-  eventName: "FREQUENCY PROTOCOL 2026 // LIVE MODULAR FIELD",
-  date: "2026.11.14 // 20:00 UTC // ACOUSTIC CHAMBER A",
+  id: "venue-pvr-imax",
+  cinemaName: "PVR INOX: Phoenix Palladium, Lower Parel",
+  audiName: "Audi 4 • IMAX with Laser (DOLBY ATMOS 7.1)",
+  movieTitle: "DUNE: PART TWO",
+  format: "IMAX 2D",
+  certificate: "UA 16+",
+  language: "English • Dolby Atmos 7.1",
+  genre: "Action, Adventure, Sci-Fi",
+  duration: "2h 46m",
+  showDate: "Today, 02 Sep 2026",
+  showTime: "07:30 PM",
+  showtimes: ["10:15 AM", "01:45 PM", "04:30 PM", "07:30 PM", "10:45 PM"],
   totalSeats: 72,
-  stageLabel: "[ STAGE PROSCENIUM // ACOUSTIC EMITTER 01 ]",
+  screenLabel: "All eyes this way please! Screen this way",
 };
 
 export const TIERS = {
   VIP: {
-    name: "PRIME ACOUSTIC POD",
-    price: 150,
-    color: "#FF9500", // Phosphor Amber / Teenage Engineering Orange
-    accentHex: "#FFB03A",
-    glowColor: "rgba(255, 149, 0, 0.4)",
-    badge: "VIP FIELD",
-    sightline: "0.1ms Phase Coherence • Direct Transducer Line",
-    features: ["Dedicated Line Out Monitoring", "Zero-Reflection Position", "Hardware Console Access"],
+    id: "RECLINER",
+    name: "RECLINER",
+    price: 450,
+    currencySymbol: "₹",
+    color: "#F84464", // BMS Crimson Red
+    badge: "RECLINER",
+    rows: ["A", "B"],
+    description: "Plush motorized leather recliners with food & beverage service",
   },
   PREFERRED: {
-    name: "MID-FIELD CONSOLE",
-    price: 95,
-    color: "#E2E8F0", // Titanium Bone White
-    accentHex: "#FFFFFF",
-    glowColor: "rgba(226, 232, 240, 0.3)",
-    badge: "MID-FIELD",
-    sightline: "Balanced Binaural Center • Elevated Console Plane",
-    features: ["Binaural Stereo Sweet Spot", "Expanded Console Stance", "Priority Signal Ingest"],
+    id: "PRIME",
+    name: "PRIME",
+    price: 290,
+    currencySymbol: "₹",
+    color: "#2DC44D", // BMS Green
+    badge: "PRIME",
+    rows: ["C", "D", "E"],
+    description: "Optimal center viewing angle & direct acoustic field",
   },
   STANDARD: {
-    name: "PERIMETER ARRAY",
-    price: 55,
-    color: "#8E95A5", // Industrial Concrete Slate
-    accentHex: "#94A3B8",
-    glowColor: "rgba(142, 149, 165, 0.25)",
-    badge: "PERIMETER",
-    sightline: "Ambient Reverb Boundary • Spatial Diffusion Vista",
-    features: ["Panoramic Chamber Vista", "Ambient Soundfield Overlook"],
+    id: "CLASSIC",
+    name: "CLASSIC",
+    price: 180,
+    currencySymbol: "₹",
+    color: "#00B9F5", // Cyan Blue
+    badge: "CLASSIC",
+    rows: ["F", "G", "H"],
+    description: "Standard cinema seating with high back support",
   },
 };
 
 export const INITIAL_SEATS = [];
 
 const rows = [
-  { row: "A", tier: "VIP", section: "SECTOR A // FRONT POD" },
-  { row: "B", tier: "VIP", section: "SECTOR B // FRONT POD" },
-  { row: "C", tier: "PREFERRED", section: "SECTOR C // CONSOLE ROW" },
-  { row: "D", tier: "PREFERRED", section: "SECTOR D // CONSOLE ROW" },
-  { row: "E", tier: "PREFERRED", section: "SECTOR E // CONSOLE ROW" },
-  { row: "F", tier: "STANDARD", section: "SECTOR F // PERIMETER ROW" },
-  { row: "G", tier: "STANDARD", section: "SECTOR G // PERIMETER ROW" },
-  { row: "H", tier: "STANDARD", section: "SECTOR H // PERIMETER ROW" },
+  { row: "A", tier: "VIP", section: "RECLINER" },
+  { row: "B", tier: "VIP", section: "RECLINER" },
+  { row: "C", tier: "PREFERRED", section: "PRIME" },
+  { row: "D", tier: "PREFERRED", section: "PRIME" },
+  { row: "E", tier: "PREFERRED", section: "PRIME" },
+  { row: "F", tier: "STANDARD", section: "CLASSIC" },
+  { row: "G", tier: "STANDARD", section: "CLASSIC" },
+  { row: "H", tier: "STANDARD", section: "CLASSIC" },
 ];
 
 const cols = 9;
-const FOCAL_X = 450;
-const FOCAL_Y = -120;
 
+// Calculate cinema grid coordinates
+// Rows ordered top-to-bottom: Recliner at top (rear of theater), Screen at bottom
 rows.forEach((r, rowIndex) => {
-  const radius = 235 + rowIndex * 44;
+  // Extra vertical spacing between sections
+  const sectionGap = r.row === "C" ? 24 : r.row === "F" ? 24 : 0;
+  const y = 80 + rowIndex * 44 + sectionGap;
 
   for (let c = 1; c <= cols; c++) {
-    const normalizedIndex = c - 5;
-    let angleDeg = normalizedIndex * 5.2;
-
-    if (c <= 3) {
-      angleDeg -= 3.2;
-    } else if (c >= 7) {
-      angleDeg += 3.2;
-    }
-
-    const angleRad = (angleDeg * Math.PI) / 180;
-    const x = Math.round(FOCAL_X + radius * Math.sin(angleRad));
-    const y = Math.round(FOCAL_Y + radius * Math.cos(angleRad));
-    const rotation = Math.round(-angleDeg);
+    // Aisle gap after seat 3 and seat 6
+    const aisleGap = c > 6 ? 36 : c > 3 ? 18 : 0;
+    const x = 110 + (c - 1) * 44 + aisleGap;
 
     const tierObj = TIERS[r.tier];
 
@@ -90,11 +90,11 @@ rows.forEach((r, rowIndex) => {
       tier: r.tier,
       section: r.section,
       price: tierObj.price,
+      currencySymbol: "₹",
       status: "available",
       x,
       y,
-      rotation,
-      sightline: tierObj.sightline,
+      description: tierObj.description,
     });
   }
 });

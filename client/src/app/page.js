@@ -25,7 +25,6 @@ export default function Home() {
   const [isSimulating, setIsSimulating] = useState(false);
   const [toast, setToast] = useState(null);
   const [isSystemInfoOpen, setIsSystemInfoOpen] = useState(false);
-  const [showHeatmap, setShowHeatmap] = useState(true);
 
   const socketRef = useRef(null);
   const toastTimeoutRef = useRef(null);
@@ -63,7 +62,7 @@ export default function Home() {
     socket.on("connect", () => {
       setIsConnected(true);
       socket.emit("join_event", {
-        eventId: "venue-synth-lab",
+        eventId: "venue-pvr-imax",
         userId: currentUserId,
       });
     });
@@ -117,8 +116,8 @@ export default function Home() {
         });
         showToast(
           "success",
-          `POD_${seatId} ALLOCATED`,
-          "Atomic lock confirmed via Redis SET_NX_EX_300. Complete checkout within 5:00."
+          `Seat ${seatId} Selected!`,
+          "Seat locked for 5 minutes. Complete payment to secure your ticket."
         );
       }
     });
@@ -127,8 +126,8 @@ export default function Home() {
     socket.on("hold_rejected", ({ seatId, reason }) => {
       showToast(
         "collision",
-        "RACE_COLLISION: POD_CLAIMED",
-        reason || `Pod ${seatId} was claimed by another operator milliseconds before you!`
+        "Seat Already Taken!",
+        reason || `Seat ${seatId} was just booked by another moviegoer milliseconds before you!`
       );
     });
 
@@ -154,8 +153,8 @@ export default function Home() {
         if (prev && prev.id === seatId) {
           showToast(
             "warning",
-            reason === "EXPIRED" ? "HOLD_EXPIRED" : "POD_RELEASED",
-            `Pod ${seatId} has been returned to field pool.`
+            reason === "EXPIRED" ? "Hold Expired" : "Seat Released",
+            `Seat ${seatId} has been released back to cinema inventory.`
           );
           return null;
         }
@@ -216,9 +215,9 @@ export default function Home() {
     socket.on("event_reset", () => {
       setHeldSeat(null);
       setPresenceMap({});
-      showToast("success", "INVENTORY_RESET", "All pod locks and records cleared.");
+      showToast("success", "Audi Inventory Reset", "All seat reservations cleared.");
       socket.emit("join_event", {
-        eventId: "venue-synth-lab",
+        eventId: "venue-pvr-imax",
         userId: currentUserId,
       });
     });
@@ -239,7 +238,7 @@ export default function Home() {
   // Click seat action
   const handleSeatClick = (seat) => {
     if (seat.status === "booked") {
-      showToast("error", "POD_BOOKED", `Pod ${seat.label} is permanently reserved in database.`);
+      showToast("error", "Seat Sold", `Seat ${seat.label} is already booked.`);
       return;
     }
 
@@ -249,8 +248,8 @@ export default function Home() {
       } else {
         showToast(
           "warning",
-          "POD_LOCKED",
-          `Pod ${seat.label} is currently held by another operator.`
+          "Seat Locked",
+          `Seat ${seat.label} is currently selected by another user.`
         );
         return;
       }
@@ -259,7 +258,7 @@ export default function Home() {
     // Atomic hold via Socket.io
     if (socketRef.current) {
       socketRef.current.emit("hold_seat", {
-        eventId: "venue-synth-lab",
+        eventId: "venue-pvr-imax",
         seatId: seat.id,
         userId,
       });
@@ -283,7 +282,7 @@ export default function Home() {
   const handleReleaseSeat = (seat) => {
     if (socketRef.current && seat) {
       socketRef.current.emit("release_seat", {
-        eventId: "venue-synth-lab",
+        eventId: "venue-pvr-imax",
         seatId: seat.id,
         userId,
       });
@@ -299,14 +298,14 @@ export default function Home() {
     socketRef.current.emit(
       "confirm_booking",
       {
-        eventId: "venue-synth-lab",
+        eventId: "venue-pvr-imax",
         seatId: seat.id,
         userId,
       },
       (response) => {
         setIsSubmitting(false);
         if (!response.success) {
-          showToast("error", "CHECKOUT_FAILED", response.message || response.error);
+          showToast("error", "Payment Failed", response.message || response.error);
         }
       }
     );
@@ -320,7 +319,7 @@ export default function Home() {
       await fetch(`${serverUrl}/api/reset`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventId: "venue-synth-lab" }),
+        body: JSON.stringify({ eventId: "venue-pvr-imax" }),
       });
     } catch (err) {
       console.error("Failed to reset:", err);
@@ -330,16 +329,16 @@ export default function Home() {
   // Live 10-Contender Collision Simulator
   const handleSimulateRace = async () => {
     setIsSimulating(true);
-    const targetSeat = "A5"; // Center VIP Pod
+    const targetSeat = "A5"; // Center Recliner seat
     const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:4000";
 
-    showToast("collision", "COLLISION_BURST_INIT", `Firing 10 concurrent requests at Pod ${targetSeat}...`);
+    showToast("collision", "Simulating 10-User Rush", `10 users clicking Seat ${targetSeat} at the exact same millisecond...`);
 
     try {
       const contenders = Array.from({ length: 10 }, (_, i) => ({
-        userId: `racer-${Math.random().toString(36).substring(2, 6)}`,
+        userId: `user-${Math.random().toString(36).substring(2, 6)}`,
         seatId: targetSeat,
-        eventId: "venue-synth-lab",
+        eventId: "venue-pvr-imax",
       }));
 
       const requests = contenders.map((c) =>
@@ -357,20 +356,20 @@ export default function Home() {
       setTimeout(() => {
         showToast(
           "success",
-          "CONCURRENCY_TEST_PASSED",
-          `10 contenders fired → Exactly ${successes} succeeded, ${rejections} cleanly rejected. Zero double-booking.`
+          "Zero Double-Booking Proven!",
+          `10 contenders collided → Exactly ${successes} won the seat, ${rejections} cleanly rejected with 0 collisions!`
         );
         setIsSimulating(false);
       }, 400);
     } catch (err) {
-      showToast("error", "TEST_ERROR", err.message);
+      showToast("error", "Test Error", err.message);
       setIsSimulating(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col te-grid-bg text-slate-100 font-mono">
-      {/* Top Hardware Header */}
+    <div className="min-h-screen flex flex-col bg-[#1F2533] text-slate-100 pb-28">
+      {/* BookMyShow Header */}
       <Header
         userId={userId}
         isConnected={isConnected}
@@ -382,23 +381,23 @@ export default function Home() {
         isSimulating={isSimulating}
       />
 
-      {/* Main Hardware Laboratory Arena */}
-      <main className="relative z-10 flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-7 flex flex-col items-center">
-        {/* Emitter Stage Component */}
+      {/* Main Cinema Seating Arena */}
+      <main className="flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col items-center">
+        {/* Movie Info & Showtime Strip */}
         <VenueStage
-          eventName={venueInfo?.eventName}
-          date={venueInfo?.date}
-          location={venueInfo?.location}
-          stageLabel={venueInfo?.stageLabel}
+          movieTitle={venueInfo?.movieTitle}
+          cinemaName={venueInfo?.cinemaName}
+          audiName={venueInfo?.audiName}
+          certificate={venueInfo?.certificate}
+          language={venueInfo?.language}
+          duration={venueInfo?.duration}
+          showtimes={venueInfo?.showtimes}
         />
 
-        {/* Legend / Selector */}
-        <SeatLegend
-          showHeatmap={showHeatmap}
-          onToggleHeatmap={() => setShowHeatmap(!showHeatmap)}
-        />
+        {/* BMS Legend Bar */}
+        <SeatLegend />
 
-        {/* Polar Modular CAD Seat Map */}
+        {/* BMS Cinema Grid Seat Map */}
         <SeatMap
           seats={seats}
           myUserId={userId}
@@ -406,10 +405,9 @@ export default function Home() {
           onSeatHover={handleSeatHover}
           onSeatLeave={handleSeatLeave}
           presenceMap={presenceMap}
-          showHeatmap={showHeatmap}
         />
 
-        {/* Tactical Tape / LED Countdown Dock */}
+        {/* Floating BMS Bottom Pay Dock */}
         <HoldCountdown
           heldSeat={heldSeat}
           onConfirmBooking={handleConfirmBooking}
@@ -417,7 +415,7 @@ export default function Home() {
           isSubmitting={isSubmitting}
         />
 
-        {/* Cryptographic Allocation Spec Sheet Modal */}
+        {/* BMS Official M-Ticket Modal */}
         <BookingModal
           booking={confirmedBooking}
           onClose={() => setConfirmedBooking(null)}
@@ -429,18 +427,18 @@ export default function Home() {
           onClose={() => setIsSystemInfoOpen(false)}
         />
 
-        {/* Tactical Toast Alerts */}
+        {/* Toast Alerts */}
         <Toast toast={toast} onDismiss={() => setToast(null)} />
       </main>
 
-      {/* Industrial Chassis Minimal Footer */}
-      <footer className="relative z-10 w-full border-t border-[#1E2330] bg-[#0E1015] py-5 px-4 text-center text-xs text-slate-500 font-mono">
-        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5">
+      {/* BookMyShow Footer */}
+      <footer className="w-full border-t border-[#2B3446] bg-[#141822] py-6 px-4 text-center text-xs text-slate-500">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
           <span className="font-semibold text-slate-400">
-            [SYNTH LAB 01] • SNAP-TIX CONCURRENCY CORE // REV.4
+            SnapTix • Live Concurrency-Safe Cinema Booking Engine
           </span>
-          <span className="text-[10px] text-slate-500">
-            REDIS_SET_NX_EX_300 • CLUSTER_PUB_SUB • NEON_POSTGRES_DURABLE
+          <span className="text-[11px] text-slate-500 font-mono">
+            Powered by Redis SET NX EX • Neon Postgres ACID Ledger • Socket.io
           </span>
         </div>
       </footer>

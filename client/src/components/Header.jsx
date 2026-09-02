@@ -6,11 +6,11 @@ import {
   RotateCcw,
   User,
   Zap,
-  Activity,
-  Cpu,
   Radio,
-  Sliders,
-  Terminal,
+  Search,
+  ChevronDown,
+  Film,
+  Activity,
 } from "lucide-react";
 import { getUserColor } from "../lib/socket";
 
@@ -25,10 +25,10 @@ export default function Header({
   isSimulating = false,
 }) {
   const [resetting, setResetting] = useState(false);
-  const userColor = userId ? getUserColor(userId) : "#FF9500";
+  const [city, setCity] = useState("Mumbai");
 
   const handleResetClick = async () => {
-    if (confirm("Execute hardware inventory reset on all active holds?")) {
+    if (confirm("Reset all cinema seats and holds for demo?")) {
       setResetting(true);
       try {
         await onReset();
@@ -39,91 +39,115 @@ export default function Header({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[#242834] bg-[#101217]/95 backdrop-blur-md">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 font-mono">
-        {/* Brand & Hardware Chassis Label */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-[#161922] border border-[#2D3241] shadow-inner">
-            <span className="flex h-2 w-2 relative">
-              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isConnected ? "bg-amber-400" : "bg-rose-500"}`}></span>
-              <span className={`relative inline-flex rounded-full h-2 w-2 ${isConnected ? "bg-[#FF9500]" : "bg-rose-500"}`}></span>
-            </span>
-            <span className="font-extrabold text-sm tracking-tight text-white uppercase">
-              OP-TIX
-            </span>
-            <span className="text-[10px] font-bold text-slate-500 tracking-wider">
-              // REV.4
-            </span>
+    <header className="sticky top-0 z-40 w-full bg-[#1F2533] border-b border-[#2C3446] shadow-md">
+      {/* Top Primary Bar */}
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+        {/* BookMyShow Brand Logo */}
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5 cursor-pointer">
+            <div className="w-8 h-8 rounded-lg bg-[#F84464] flex items-center justify-center shadow-md">
+              <Film className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex items-baseline font-black tracking-tight">
+              <span className="text-white text-xl">Snap</span>
+              <span className="text-[#F84464] text-xl">Tix</span>
+            </div>
           </div>
 
-          <div className="hidden sm:block text-[11px] text-slate-400 font-medium">
-            SYNTH LAB 01 <span className="text-slate-600">•</span> FIELD ACOUSTICS
-          </div>
-        </div>
-
-        {/* Center Hardware LCD Display Telemetry */}
-        <div className="hidden lg:flex items-center gap-2.5 text-xs">
-          {/* WebSocket Ping Gauge */}
-          <div className="flex items-center gap-2 px-3 py-1 rounded bg-[#090A0D] border border-[#202430] text-[#FF9500] font-mono text-[11px] shadow-inner">
-            <Radio className="w-3 h-3 text-[#FF9500] animate-pulse" />
-            <span className="text-slate-500">WS.PING:</span>
-            <span className="font-bold">{isConnected ? `${String(latency).padStart(2, "0")}MS` : "OFFLINE"}</span>
-          </div>
-
-          {/* Redis Lock State Indicator */}
-          <div className="flex items-center gap-2 px-3 py-1 rounded bg-[#090A0D] border border-[#202430] text-emerald-400 font-mono text-[11px] shadow-inner">
-            <Zap className="w-3 h-3 text-emerald-400" />
-            <span className="text-slate-500">LOCK:</span>
-            <span className="font-bold tracking-tight">SET_NX_EX</span>
-          </div>
-
-          {/* Booking Velocity Rate */}
-          <div className="flex items-center gap-2 px-3 py-1 rounded bg-[#090A0D] border border-[#202430] text-slate-200 font-mono text-[11px] shadow-inner">
-            <Activity className="w-3 h-3 text-sky-400" />
-            <span className="text-slate-500">RATE:</span>
-            <span className="font-bold text-white">{String(velocity).padStart(2, "0")}_TX/2M</span>
+          {/* City Selector */}
+          <div className="hidden sm:flex items-center gap-1 text-xs text-slate-300 hover:text-white font-medium cursor-pointer px-2 py-1 rounded bg-[#272F40] border border-[#353F54]">
+            <span>{city}</span>
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
           </div>
         </div>
 
-        {/* Right Tactical Action Controls */}
-        <div className="flex items-center gap-2">
-          {/* Hardware Collision Simulator Trigger */}
+        {/* Search Bar Simulation */}
+        <div className="hidden md:flex flex-1 max-w-md mx-4 relative">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            readOnly
+            value="Search for Movies, Events, Plays, Sports and Activities"
+            className="w-full pl-9 pr-4 py-1.5 rounded-md bg-[#2C3446] text-xs text-slate-400 border border-[#3A455C] focus:outline-none cursor-default"
+          />
+        </div>
+
+        {/* Live Concurrency & Booking Controls */}
+        <div className="flex items-center gap-2.5 text-xs">
+          {/* Live Socket Latency */}
+          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#131823] border border-[#2B3447] text-slate-300">
+            <Radio className={`w-3 h-3 ${isConnected ? "text-emerald-400 animate-pulse" : "text-rose-400"}`} />
+            <span className="text-slate-400 text-[11px]">Live Socket:</span>
+            <span className="font-bold text-emerald-400 text-[11px]">{isConnected ? `${latency}ms` : "Offline"}</span>
+          </div>
+
+          {/* Velocity Counter */}
+          <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#131823] border border-[#2B3447] text-slate-300">
+            <Activity className="w-3 h-3 text-[#F84464]" />
+            <span className="text-slate-400 text-[11px]">Velocity:</span>
+            <span className="font-bold text-white text-[11px]">{velocity} booked</span>
+          </div>
+
+          {/* 10-Contender Race Test Button */}
           <button
             onClick={onSimulateRace}
             disabled={isSimulating}
-            className="te-button flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-[#FF9500] hover:text-[#FFAE33] border border-[#FF9500]/30 transition"
-            title="Fire 10 simultaneous concurrent requests to test zero double-booking"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#F84464] hover:bg-[#E03352] text-white font-bold text-xs shadow-sm transition active:scale-95"
+            title="Simulate 10 simultaneous concurrent booking attempts on the same seat"
           >
-            <Zap className={`w-3.5 h-3.5 ${isSimulating ? "animate-spin text-white" : "text-[#FF9500]"}`} />
-            <span className="text-[11px]">{isSimulating ? "FIRING_10X..." : "SIM_COLLISION"}</span>
+            <Zap className={`w-3.5 h-3.5 ${isSimulating ? "animate-spin" : ""}`} />
+            <span className="hidden sm:inline">{isSimulating ? "Racing..." : "Test Concurrency Race"}</span>
+            <span className="sm:hidden">Race</span>
           </button>
 
-          {/* Architecture Proof Specs */}
+          {/* Concurrency Architecture Specs */}
           <button
             onClick={onOpenSystemInfo}
-            className="te-button flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold text-slate-300 hover:text-white transition"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[#2C3446] hover:bg-[#384258] text-slate-200 text-xs font-semibold transition border border-[#3A455C]"
           >
-            <Terminal className="w-3.5 h-3.5 text-slate-400" />
-            <span className="hidden md:inline">SPECS</span>
+            <ShieldCheck className="w-3.5 h-3.5 text-[#00B9F5]" />
+            <span className="hidden sm:inline">Proof</span>
           </button>
 
-          {/* Reset Chassis Button */}
+          {/* Reset Demo Button */}
           <button
             onClick={handleResetClick}
             disabled={resetting}
-            className="te-button p-2 rounded-lg text-slate-400 hover:text-rose-400 transition"
-            title="Reset active holds"
+            className="p-1.5 rounded-md bg-[#2C3446] hover:bg-[#384258] text-slate-300 hover:text-rose-400 transition border border-[#3A455C]"
+            title="Reset seat inventory"
           >
             <RotateCcw className={`w-3.5 h-3.5 ${resetting ? "animate-spin" : ""}`} />
           </button>
 
-          {/* Operator Identity Pill */}
-          <div className="flex items-center gap-2 pl-2 border-l border-[#242834]">
-            <div className="px-2.5 py-1 rounded bg-[#161922] border border-[#2B303E] text-[11px] font-bold text-slate-300 flex items-center gap-1.5 shadow-inner">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FF9500]"></span>
-              <span className="text-slate-500">OP:</span>
-              <span className="text-white font-mono">{userId}</span>
+          {/* User Profile Pill */}
+          <div className="flex items-center gap-2 pl-2 border-l border-[#2C3446]">
+            <div className="w-7 h-7 rounded-full bg-[#F84464]/20 border border-[#F84464]/40 flex items-center justify-center text-xs font-bold text-[#F84464]">
+              <User className="w-3.5 h-3.5" />
             </div>
+            <div className="hidden 2xl:block text-left">
+              <div className="text-[10px] text-slate-400">Booker ID</div>
+              <div className="text-[11px] font-bold text-white">{userId}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* BookMyShow Secondary Navigation Strip */}
+      <div className="bg-[#191F2C] border-t border-[#262E3E] hidden md:block">
+        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-10 flex items-center justify-between text-xs text-slate-300">
+          <div className="flex items-center gap-6">
+            <span className="font-semibold text-white cursor-pointer hover:text-[#F84464] transition">Movies</span>
+            <span className="cursor-pointer hover:text-[#F84464] transition">Stream</span>
+            <span className="cursor-pointer hover:text-[#F84464] transition">Events</span>
+            <span className="cursor-pointer hover:text-[#F84464] transition">Plays</span>
+            <span className="cursor-pointer hover:text-[#F84464] transition">Sports</span>
+            <span className="cursor-pointer hover:text-[#F84464] transition">Activities</span>
+          </div>
+          <div className="flex items-center gap-4 text-slate-400 text-[11px]">
+            <span>ListYourShow</span>
+            <span>Corporates</span>
+            <span>Offers</span>
+            <span>Gift Cards</span>
           </div>
         </div>
       </div>
