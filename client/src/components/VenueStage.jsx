@@ -30,21 +30,38 @@ export default function VenueStage({
       {/* Movie Meta & Cinema Details Header */}
       <div className="p-4 sm:p-5 rounded-xl bg-white border border-slate-200/80 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <h1 className="text-xl sm:text-2xl font-black text-[#222433] tracking-tight">
-                {venueInfo.title || venueInfo.movieTitle}
-              </h1>
-              <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-bold border border-slate-200">
-                {venueInfo.rating || venueInfo.certificate || "UA 16+"}
-              </span>
-              <span className="px-2 py-0.5 rounded bg-[#F84464]/10 text-[#F84464] border border-[#F84464]/20 text-[10px] font-bold">
-                {audiType}
-              </span>
-              <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold">
-                {venueInfo.category || "Movies"}
-              </span>
-            </div>
+          <div className="flex items-start gap-4">
+            {/* Live Movie Poster */}
+            {venueInfo.poster && (
+              <div className="w-16 sm:w-20 aspect-[2/3] rounded-lg overflow-hidden shrink-0 shadow-sm border border-slate-200/80 bg-slate-900 group">
+                <img
+                  src={venueInfo.poster}
+                  alt={venueInfo.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+
+            <div>
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <h1 className="text-xl sm:text-2xl font-black text-[#222433] tracking-tight">
+                  {venueInfo.title || venueInfo.movieTitle}
+                </h1>
+                <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 text-[10px] font-bold border border-slate-200">
+                  {venueInfo.rating || venueInfo.certificate || "UA 16+"}
+                </span>
+                <span className="px-2 py-0.5 rounded bg-[#F84464]/10 text-[#F84464] border border-[#F84464]/20 text-[10px] font-bold">
+                  {audiType}
+                </span>
+                <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold">
+                  {venueInfo.category || "Movies"}
+                </span>
+                {venueInfo.score && (
+                  <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-bold flex items-center gap-1">
+                    ★ {venueInfo.score}
+                  </span>
+                )}
+              </div>
 
             <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
               <span className="flex items-center gap-1 font-medium text-slate-800">
@@ -59,8 +76,9 @@ export default function VenueStage({
               </span>
             </div>
           </div>
+        </div>
 
-          {/* Showtimes Selector for this specific auditorium */}
+        {/* Showtimes Selector for this specific auditorium */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
             {showtimes.map((time) => {
               const isSelected = time === selectedShowtime;

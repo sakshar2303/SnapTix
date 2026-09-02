@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import Header from "../components/Header";
+import LiveShowsStrip from "../components/LiveShowsStrip";
 import VenueStage from "../components/VenueStage";
 import SeatMap from "../components/SeatMap";
 import SeatLegend from "../components/SeatLegend";
@@ -594,6 +595,14 @@ export default function Home() {
 
       {/* Main Cinema Seating Arena */}
       <main className="flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col items-center">
+        {/* Recommended & Trending Live Shows Carousel with Posters */}
+        <LiveShowsStrip
+          catalog={catalog}
+          activeEventId={activeEventId}
+          onSelectEvent={handleSelectEvent}
+          activeCity={activeCity}
+        />
+
         {/* Movie Info, Showtime Strip & Theatre Switcher */}
         <VenueStage
           venueInfo={venueInfo}
