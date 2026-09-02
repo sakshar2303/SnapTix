@@ -7,6 +7,7 @@ export default function SeatMap({
   seats = [],
   currentAuditorium,
   myUserId,
+  selectedSeats = [],
   onSeatClick,
   onSeatHover,
   onSeatLeave,
@@ -245,6 +246,7 @@ export default function SeatMap({
 
   function renderSeatBox(seat) {
     const isMine = seat.isMine || (seat.heldBy && seat.heldBy === myUserId);
+    const isInCart = selectedSeats.some((s) => s.id === seat.id); // user clicked but not held yet
     const isHeldByOther = seat.status === "held" && !isMine;
     const isBooked = seat.status === "booked";
     const isAvailable = seat.status === "available";
@@ -256,6 +258,9 @@ export default function SeatMap({
       boxStyles = "bg-[#EEEEEE] border-slate-200 text-slate-300 cursor-not-allowed";
     } else if (isMine) {
       boxStyles = "bg-[#1EA83C] border-[#1EA83C] text-white font-black shadow-md bms-selected-seat cursor-pointer";
+    } else if (isInCart) {
+      // In local cart, not yet held
+      boxStyles = "bg-indigo-600 border-indigo-600 text-white font-black shadow-md ring-2 ring-indigo-300 cursor-pointer scale-105";
     } else if (isHeldByOther) {
       boxStyles = "bg-amber-100 border-amber-400 text-amber-700 cursor-not-allowed";
     } else if (isAvailable) {
@@ -286,7 +291,7 @@ export default function SeatMap({
         <div
           className={`${seatDimensions} border flex items-center justify-center text-[11px] font-bold transition-all ${boxStyles}`}
         >
-          {isBooked ? "" : isMine ? "✓" : seat.col}
+          {isBooked ? "" : isMine ? "✓" : isInCart ? "✓" : seat.col}
         </div>
 
         {/* Live Presence Badge on Top */}

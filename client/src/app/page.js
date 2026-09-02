@@ -39,6 +39,8 @@ export default function Home() {
   const [velocity, setVelocity] = useState(0);
   const [presenceMap, setPresenceMap] = useState({});
   const [heldSeat, setHeldSeat] = useState(null);
+  const [selectedSeats, setSelectedSeats] = useState([]); // cart before holding
+  const [heldSeats, setHeldSeats] = useState([]); // all actively held seats
   const [confirmedBooking, setConfirmedBooking] = useState(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedShowForDetails, setSelectedShowForDetails] = useState(null);
@@ -445,26 +447,45 @@ export default function Home() {
     }
 
     if (seat.status === "held") {
-      if (seat.isMine || (heldSeat && heldSeat.id === seat.id)) {
+      // If it's one of my held seats, ignore click
+      if (heldSeats.some((s) => s.id === seat.id) || (heldSeat && heldSeat.id === seat.id)) {
         return;
       } else {
-        showToast(
-          "warning",
-          "Seat Locked",
-          `Seat ${seat.label} is currently selected by another attendee.`
-        );
+        showToast("warning", "Seat Locked", `Seat ${seat.label} is reserved by another attendee.`);
         return;
       }
     }
 
-    // Atomic hold via Socket.io
-    if (socketRef.current) {
+    // If already in cart → remove (deselect)
+    const alreadySelected = selectedSeats.some((s) => s.id === seat.id);
+    if (alreadySelected) {
+      setSelectedSeats((prev) => prev.filter((s) => s.id !== seat.id));
+      return;
+    }
+
+    // Limit to 8 seats per transaction
+    if (selectedSeats.length >= 8) {
+      showToast("warning", "Max 8 Seats", "You can select up to 8 seats per booking.");
+      return;
+    }
+
+    // Add to selection cart (no immediate socket hold)
+    setSelectedSeats((prev) => [...prev, seat]);
+  };
+
+  // Hold ALL selected seats atomically when user clicks "Proceed to Pay"
+  const handleHoldSelectedSeats = () => {
+    if (!socketRef.current || selectedSeats.length === 0) return;
+    selectedSeats.forEach((seat) => {
       socketRef.current.emit("hold_seat", {
         eventId: activeEventId,
         seatId: seat.id,
         userId,
       });
-    }
+    });
+    setHeldSeats(selectedSeats);
+    setHeldSeat(selectedSeats[0]); // backward compat for single-seat flows
+    setSelectedSeats([]);
   };
 
   // Live Presence hover triggers
@@ -480,16 +501,21 @@ export default function Home() {
     }
   };
 
-  // Voluntary hold release
+  // Voluntary hold release for ALL held seats
   const handleReleaseSeat = (seat) => {
-    if (socketRef.current && seat) {
-      socketRef.current.emit("release_seat", {
-        eventId: activeEventId,
-        seatId: seat.id,
-        userId,
+    const seatsToRelease = heldSeats.length > 0 ? heldSeats : (seat ? [seat] : []);
+    if (socketRef.current) {
+      seatsToRelease.forEach((s) => {
+        socketRef.current.emit("release_seat", {
+          eventId: activeEventId,
+          seatId: s.id,
+          userId,
+        });
       });
-      setHeldSeat(null);
     }
+    setHeldSeat(null);
+    setHeldSeats([]);
+    setSelectedSeats([]);
   };
 
   // Confirm booking checkout
@@ -628,6 +654,7 @@ export default function Home() {
           seats={seats}
           currentAuditorium={currentAuditorium}
           myUserId={userId}
+          selectedSeats={selectedSeats}
           onSeatClick={handleSeatClick}
           onSeatHover={handleSeatHover}
           onSeatLeave={handleSeatLeave}
@@ -637,10 +664,14 @@ export default function Home() {
         {/* Floating BMS Bottom Pay Dock */}
         <HoldCountdown
           heldSeat={heldSeat}
+          heldSeats={heldSeats}
+          selectedSeats={selectedSeats}
           venueInfo={venueInfo}
           selectedShowtime={selectedShowtime}
           appliedPromo={appliedPromo}
           onConfirmBooking={() => setIsPaymentModalOpen(true)}
+          onHoldSelectedSeats={handleHoldSelectedSeats}
+          onClearSelection={() => setSelectedSeats([])}
           onReleaseSeat={handleReleaseSeat}
           isSubmitting={isSubmitting}
         />
@@ -658,6 +689,7 @@ export default function Home() {
           isOpen={isPaymentModalOpen}
           onClose={() => setIsPaymentModalOpen(false)}
           heldSeat={heldSeat}
+          heldSeats={heldSeats}
           venueInfo={venueInfo}
           selectedShowtime={selectedShowtime}
           appliedPromo={appliedPromo}

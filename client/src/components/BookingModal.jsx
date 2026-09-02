@@ -14,6 +14,7 @@ import {
   Calendar,
   Star,
   Zap,
+  Sparkles,
 } from "lucide-react";
 import { SnapTixMark } from "./SnapTixLogo";
 
@@ -25,6 +26,8 @@ function generateQRPattern(bookingId) {
 
 export default function BookingModal({ booking, venueInfo, selectedShowtime, onClose }) {
   const [showDownloadAnim, setShowDownloadAnim] = useState(false);
+  const [showSnapPoints, setShowSnapPoints] = useState(false);
+  const snapPointsEarned = booking ? Math.floor((booking.price || 0) * 0.1) + 50 : 0;
 
   useEffect(() => {
     if (booking) {
@@ -44,6 +47,10 @@ export default function BookingModal({ booking, venueInfo, selectedShowtime, onC
         setTimeout(() => burst({ x: 0.7, y: 0.5 }, ["#1EA83C", "#00B9F5", "#FFD700"]), 150);
         setTimeout(() => burst({ x: 0.5, y: 0.4 }, ["#F84464", "#ffffff", "#1EA83C"]), 300);
       } catch (_) {}
+
+      // Show SnapPoints badge after a short delay
+      setTimeout(() => setShowSnapPoints(true), 1200);
+      setTimeout(() => setShowSnapPoints(false), 4500);
     }
   }, [booking]);
 
@@ -61,6 +68,18 @@ export default function BookingModal({ booking, venueInfo, selectedShowtime, onC
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      {/* SnapPoints Earned Float-Up Badge */}
+      {showSnapPoints && (
+        <div className="fixed top-1/4 left-1/2 -translate-x-1/2 z-[60] animate-bounce pointer-events-none">
+          <div className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-2xl border border-amber-300">
+            <Zap className="w-5 h-5 fill-white" />
+            <div>
+              <p className="text-[10px] font-semibold opacity-80">SNAPPOINTS EARNED</p>
+              <p className="text-2xl font-black leading-tight">+{snapPointsEarned}</p>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="relative w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl text-[#222433]">
         {/* Close Button */}
         <button
