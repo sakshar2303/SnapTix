@@ -6,7 +6,7 @@ import { createAdapter } from "@socket.io/redis-adapter";
 import { CONFIG } from "./config.js";
 import { initDb, createBooking, getBookingsForEvent, isUsingFallback as isDbFallback } from "./db/index.js";
 import { initRedis, getRedisClient, getRedisSub, redisEvents, isRedisMock } from "./redis.js";
-import { VENUE_INFO, INITIAL_SEATS, TIERS } from "./data/venue.js";
+import { VENUE_INFO, INITIAL_SEATS, TIERS, getEventById, generateSeatsForEvent, CATALOG } from "./data/venue.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -71,11 +71,13 @@ function parseSeatHoldKey(key) {
 // Compile current state of all seats for an event
 async function getEventState(eventId, requestingUserId = null) {
   const redis = getRedisClient();
+  const eventObj = getEventById(eventId);
+  const seatsForEvent = generateSeatsForEvent(eventObj);
   const bookings = await getBookingsForEvent(eventId);
   const bookedSeatMap = new Map(bookings.map((b) => [b.seat_id, b]));
 
   const seatsWithState = await Promise.all(
-    INITIAL_SEATS.map(async (seat) => {
+    seatsForEvent.map(async (seat) => {
       // 1. Check if booked in Postgres (durable)
       if (bookedSeatMap.has(seat.id)) {
         const booking = bookedSeatMap.get(seat.id);
@@ -113,12 +115,12 @@ async function getEventState(eventId, requestingUserId = null) {
   );
 
   return {
-    venue: VENUE_INFO,
-    tiers: TIERS,
+    venue: eventObj,
+    tiers: eventObj.sections,
     seats: seatsWithState,
     velocity: getRecentBookingCount(),
     stats: {
-      total: INITIAL_SEATS.length,
+      total: seatsForEvent.length,
       booked: bookings.length,
       held: seatsWithState.filter((s) => s.status === "held").length,
       available: seatsWithState.filter((s) => s.status === "available").length,
@@ -169,6 +171,11 @@ app.get("/api/event", async (req, res) => {
     console.error("Error fetching event state:", err);
     res.status(500).json({ error: "Failed to load event state" });
   }
+});
+
+// Get multi-event catalog
+app.get("/api/catalog", (req, res) => {
+  res.json(CATALOG);
 });
 
 // REST endpoint for hold - crucial for load testing!

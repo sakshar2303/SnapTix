@@ -1,11 +1,14 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Clock, Check, X } from "lucide-react";
+import { Clock, X, Tag } from "lucide-react";
 import { TIERS } from "../lib/constants";
 
 export default function HoldCountdown({
   heldSeat,
+  venueInfo,
+  selectedShowtime,
+  appliedPromo,
   onConfirmBooking,
   onReleaseSeat,
   isSubmitting,
@@ -34,6 +37,11 @@ export default function HoldCountdown({
   const minutes = Math.floor(secondsLeft / 60);
   const seconds = secondsLeft % 60;
   const isUrgent = secondsLeft <= 60;
+
+  // Calculate discount if promo applied
+  const originalPrice = heldSeat.price;
+  const discountAmount = appliedPromo ? Math.min(originalPrice - 10, appliedPromo.discountAmount) : 0;
+  const finalPrice = Math.max(10, originalPrice - discountAmount);
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t-2 border-[#F84464] shadow-[0_-10px_30px_rgba(0,0,0,0.12)] animate-in slide-in-from-bottom duration-200">
@@ -67,12 +75,22 @@ export default function HoldCountdown({
               <span className="text-xs text-slate-500 font-medium">
                 (1 Ticket)
               </span>
+              {appliedPromo && (
+                <span className="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold flex items-center gap-0.5">
+                  <Tag className="w-2.5 h-2.5" /> {appliedPromo.code} applied (-₹{discountAmount})
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-2 text-xs text-slate-500">
-              <span className="font-black text-[#222433] text-sm">
-                ₹{heldSeat.price}.00
-              </span>
-              <span>• Audi 4 (IMAX 2D)</span>
+              <div className="flex items-center gap-1.5">
+                {appliedPromo && (
+                  <span className="line-through text-slate-400">₹{originalPrice}</span>
+                )}
+                <span className="font-black text-[#222433] text-sm">
+                  ₹{finalPrice}.00
+                </span>
+              </div>
+              <span>• {venueInfo?.title || "Dune: Part Two"} ({selectedShowtime || "07:30 PM"})</span>
             </div>
           </div>
         </div>
@@ -89,7 +107,7 @@ export default function HoldCountdown({
           </button>
 
           <button
-            onClick={() => onConfirmBooking(heldSeat)}
+            onClick={() => onConfirmBooking({ ...heldSeat, price: finalPrice })}
             disabled={isSubmitting || secondsLeft <= 0}
             className="flex-1 sm:flex-none px-8 py-2.5 rounded-lg bg-[#F84464] hover:bg-[#E03352] text-white font-bold text-sm shadow-md transition transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
           >
@@ -100,7 +118,7 @@ export default function HoldCountdown({
               </>
             ) : (
               <>
-                <span>Pay ₹{heldSeat.price}.00</span>
+                <span>Pay ₹{finalPrice}.00</span>
               </>
             )}
           </button>

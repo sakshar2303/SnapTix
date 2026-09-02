@@ -10,7 +10,7 @@ import {
   Download,
 } from "lucide-react";
 
-export default function BookingModal({ booking, onClose }) {
+export default function BookingModal({ booking, venueInfo, selectedShowtime, onClose }) {
   useEffect(() => {
     if (booking) {
       try {
@@ -39,7 +39,7 @@ export default function BookingModal({ booking, onClose }) {
           <X className="w-4 h-4" />
         </button>
 
-        {/* Top BookMyShow Crimson Banner */}
+        {/* Top Crimson Banner */}
         <div className="bg-[#F84464] px-6 py-4 text-center relative">
           <span className="text-[10px] font-black uppercase tracking-widest text-white/90">
             OFFICIAL SNAPTIX M-TICKET
@@ -56,15 +56,15 @@ export default function BookingModal({ booking, onClose }) {
             <div>
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="px-1.5 py-0.2 rounded bg-[#F84464]/10 text-[#F84464] text-[10px] font-bold border border-[#F84464]/20">
-                  IMAX 2D
+                  {venueInfo?.format || "IMAX 2D"}
                 </span>
-                <span className="text-[10px] text-slate-400">UA 16+</span>
+                <span className="text-[10px] text-slate-400">{venueInfo?.rating || "UA 16+"}</span>
               </div>
               <h4 className="font-black text-lg text-[#222433]">
-                DUNE: PART TWO
+                {venueInfo?.title || "DUNE: PART TWO"}
               </h4>
               <p className="text-xs text-slate-500 mt-0.5">
-                PVR INOX: Phoenix Palladium • Audi 4
+                {venueInfo?.subtitle || "PVR INOX: Phoenix Palladium • Audi 4"}
               </p>
             </div>
             <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-[#F84464]">
@@ -90,7 +90,7 @@ export default function BookingModal({ booking, onClose }) {
                 SHOWTIME
               </span>
               <span className="font-bold text-sm text-[#222433] block">
-                Today, 07:30 PM
+                Today, {selectedShowtime || "07:30 PM"}
               </span>
               <span className="text-[11px] text-emerald-600 font-bold block">
                 ₹{booking.price}.00 Paid
@@ -119,7 +119,7 @@ export default function BookingModal({ booking, onClose }) {
           {/* Buttons */}
           <div className="mt-5 flex items-center gap-3">
             <button
-              onClick={() => alert("M-Ticket saved to your device!")}
+              onClick={() => alert("M-Ticket pass saved to your device wallet!")}
               className="flex-1 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />

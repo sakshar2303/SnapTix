@@ -8,6 +8,13 @@ import SeatLegend from "../components/SeatLegend";
 import HoldCountdown from "../components/HoldCountdown";
 import BookingModal from "../components/BookingModal";
 import SystemInfoModal from "../components/SystemInfoModal";
+import CitySelectModal from "../components/CitySelectModal";
+import StreamCatalogModal from "../components/StreamCatalogModal";
+import OffersModal from "../components/OffersModal";
+import GiftCardsModal from "../components/GiftCardsModal";
+import ListYourShowModal from "../components/ListYourShowModal";
+import CorporatesModal from "../components/CorporatesModal";
+import UserProfileModal from "../components/UserProfileModal";
 import Toast from "../components/Toast";
 import { getSocket, getUserId } from "../lib/socket";
 
@@ -15,15 +22,30 @@ export default function Home() {
   const [userId, setUserId] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   const [latency, setLatency] = useState(12);
+  const [catalog, setCatalog] = useState([]);
+  const [activeCategory, setActiveCategory] = useState("Movies");
+  const [activeCity, setActiveCity] = useState("Mumbai");
+  const [activeEventId, setActiveEventId] = useState("venue-pvr-imax");
+  const [selectedShowtime, setSelectedShowtime] = useState("07:30 PM");
   const [venueInfo, setVenueInfo] = useState(null);
   const [seats, setSeats] = useState([]);
   const [velocity, setVelocity] = useState(0);
   const [presenceMap, setPresenceMap] = useState({});
   const [heldSeat, setHeldSeat] = useState(null);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+  const [appliedPromo, setAppliedPromo] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const [toast, setToast] = useState(null);
+
+  // Modals state
+  const [isCityModalOpen, setIsCityModalOpen] = useState(false);
+  const [isStreamModalOpen, setIsStreamModalOpen] = useState(false);
+  const [isOffersModalOpen, setIsOffersModalOpen] = useState(false);
+  const [isGiftCardsModalOpen, setIsGiftCardsModalOpen] = useState(false);
+  const [isListYourShowModalOpen, setIsListYourShowModalOpen] = useState(false);
+  const [isCorporatesModalOpen, setIsCorporatesModalOpen] = useState(false);
+  const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
   const [isSystemInfoOpen, setIsSystemInfoOpen] = useState(false);
 
   const socketRef = useRef(null);
@@ -35,6 +57,19 @@ export default function Home() {
     toastTimeoutRef.current = setTimeout(() => {
       setToast(null);
     }, 4500);
+  }, []);
+
+  // Fetch catalog on mount
+  useEffect(() => {
+    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:4000";
+    fetch(`${serverUrl}/api/catalog`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setCatalog(data);
+        }
+      })
+      .catch((err) => console.error("Error fetching catalog:", err));
   }, []);
 
   // Measure WebSocket ping latency
@@ -51,6 +86,17 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [isConnected]);
 
+  // Join or switch event room
+  const joinEventRoom = useCallback((eventId, currentUserId) => {
+    if (!socketRef.current || !eventId) return;
+    setHeldSeat(null);
+    setPresenceMap({});
+    socketRef.current.emit("join_event", {
+      eventId,
+      userId: currentUserId,
+    });
+  }, []);
+
   // Initialize Socket.io connection & userId
   useEffect(() => {
     const currentUserId = getUserId();
@@ -61,10 +107,7 @@ export default function Home() {
 
     socket.on("connect", () => {
       setIsConnected(true);
-      socket.emit("join_event", {
-        eventId: "venue-pvr-imax",
-        userId: currentUserId,
-      });
+      joinEventRoom(activeEventId, currentUserId);
     });
 
     socket.on("disconnect", () => {
@@ -86,7 +129,7 @@ export default function Home() {
       }
     });
 
-    // Real-time seat held event (broadcast to all)
+    // Real-time seat held event
     socket.on("seat_held", ({ seatId, userId: holderId, expiresAt, duration }) => {
       const isMine = holderId === currentUserId;
 
@@ -127,11 +170,11 @@ export default function Home() {
       showToast(
         "collision",
         "Seat Already Taken!",
-        reason || `Seat ${seatId} was just booked by another moviegoer milliseconds before you!`
+        reason || `Seat ${seatId} was just booked by another attendee milliseconds before you!`
       );
     });
 
-    // Real-time seat release event (expiry or cancel)
+    // Real-time seat release event
     socket.on("seat_released", ({ seatId, userId: releasedBy, reason }) => {
       setSeats((prevSeats) =>
         prevSeats.map((s) => {
@@ -154,7 +197,7 @@ export default function Home() {
           showToast(
             "warning",
             reason === "EXPIRED" ? "Hold Expired" : "Seat Released",
-            `Seat ${seatId} has been released back to cinema inventory.`
+            `Seat ${seatId} has been released back to inventory.`
           );
           return null;
         }
@@ -215,11 +258,8 @@ export default function Home() {
     socket.on("event_reset", () => {
       setHeldSeat(null);
       setPresenceMap({});
-      showToast("success", "Audi Inventory Reset", "All seat reservations cleared.");
-      socket.emit("join_event", {
-        eventId: "venue-pvr-imax",
-        userId: currentUserId,
-      });
+      showToast("success", "Inventory Reset", "All seat reservations cleared.");
+      joinEventRoom(activeEventId, currentUserId);
     });
 
     return () => {
@@ -233,7 +273,58 @@ export default function Home() {
       socket.off("presence_updated");
       socket.off("event_reset");
     };
-  }, [showToast]);
+  }, [showToast, joinEventRoom, activeEventId, seats]);
+
+  // Handle switching category tabs
+  const handleSelectCategory = (cat) => {
+    setActiveCategory(cat);
+    if (cat === "Stream") {
+      setIsStreamModalOpen(true);
+      return;
+    }
+
+    // Map category to catalog event
+    const eventForCat = catalog.find((e) => e.category === cat) || catalog[0];
+    if (eventForCat && eventForCat.id !== activeEventId) {
+      setActiveEventId(eventForCat.id);
+      setSelectedShowtime(eventForCat.showtimes[0]);
+      joinEventRoom(eventForCat.id, userId);
+      showToast("success", `${cat} Selected`, `Loaded ${eventForCat.title}`);
+    }
+  };
+
+  // Handle switching event directly from search or catalog
+  const handleSelectEvent = (eventId) => {
+    const found = catalog.find((e) => e.id === eventId);
+    if (found) {
+      setActiveEventId(eventId);
+      setActiveCategory(found.category);
+      setSelectedShowtime(found.showtimes[0]);
+      joinEventRoom(eventId, userId);
+      showToast("success", "Show Switched", `Viewing ${found.title}`);
+    }
+  };
+
+  // Handle city selection
+  const handleSelectCity = (city) => {
+    setActiveCity(city);
+    showToast("success", "City Updated", `Now showing cinemas and events in ${city}`);
+  };
+
+  // Handle Promo Code application
+  const handleApplyPromo = (offer) => {
+    setAppliedPromo(offer);
+    showToast("success", `Promo ${offer.code} Applied!`, `${offer.title} discount applied to checkout.`);
+  };
+
+  // Switch to a new random user identity
+  const handleSwitchUser = () => {
+    const newId = `user-${Math.random().toString(36).substring(2, 7)}`;
+    localStorage.setItem("snaptix_user_id", newId);
+    setUserId(newId);
+    joinEventRoom(activeEventId, newId);
+    showToast("success", "New Booker Identity", `Switched to ${newId}. You can test concurrent locking against other tabs!`);
+  };
 
   // Click seat action
   const handleSeatClick = (seat) => {
@@ -249,7 +340,7 @@ export default function Home() {
         showToast(
           "warning",
           "Seat Locked",
-          `Seat ${seat.label} is currently selected by another user.`
+          `Seat ${seat.label} is currently selected by another attendee.`
         );
         return;
       }
@@ -258,7 +349,7 @@ export default function Home() {
     // Atomic hold via Socket.io
     if (socketRef.current) {
       socketRef.current.emit("hold_seat", {
-        eventId: "venue-pvr-imax",
+        eventId: activeEventId,
         seatId: seat.id,
         userId,
       });
@@ -282,7 +373,7 @@ export default function Home() {
   const handleReleaseSeat = (seat) => {
     if (socketRef.current && seat) {
       socketRef.current.emit("release_seat", {
-        eventId: "venue-pvr-imax",
+        eventId: activeEventId,
         seatId: seat.id,
         userId,
       });
@@ -298,9 +389,10 @@ export default function Home() {
     socketRef.current.emit(
       "confirm_booking",
       {
-        eventId: "venue-pvr-imax",
+        eventId: activeEventId,
         seatId: seat.id,
         userId,
+        price: seat.price,
       },
       (response) => {
         setIsSubmitting(false);
@@ -314,12 +406,11 @@ export default function Home() {
   // Reset demo state
   const handleResetDemo = async () => {
     try {
-      const serverUrl =
-        process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:4000";
+      const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:4000";
       await fetch(`${serverUrl}/api/reset`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventId: "venue-pvr-imax" }),
+        body: JSON.stringify({ eventId: activeEventId }),
       });
     } catch (err) {
       console.error("Failed to reset:", err);
@@ -329,7 +420,7 @@ export default function Home() {
   // Live 10-Contender Collision Simulator
   const handleSimulateRace = async () => {
     setIsSimulating(true);
-    const targetSeat = "A5"; // Center Recliner seat
+    const targetSeat = "A5";
     const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:4000";
 
     showToast("collision", "Simulating 10-User Rush", `10 users clicking Seat ${targetSeat} at the exact same millisecond...`);
@@ -338,7 +429,7 @@ export default function Home() {
       const contenders = Array.from({ length: 10 }, (_, i) => ({
         userId: `user-${Math.random().toString(36).substring(2, 6)}`,
         seatId: targetSeat,
-        eventId: "venue-pvr-imax",
+        eventId: activeEventId,
       }));
 
       const requests = contenders.map((c) =>
@@ -369,12 +460,25 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F5F5FA] text-[#222433] pb-28">
-      {/* BookMyShow Header */}
+      {/* Functional BookMyShow Header with All Interactive Windows */}
       <Header
         userId={userId}
         isConnected={isConnected}
         velocity={velocity}
         latency={latency}
+        activeCategory={activeCategory}
+        activeCity={activeCity}
+        activeEventId={activeEventId}
+        catalog={catalog}
+        onSelectCategory={handleSelectCategory}
+        onSelectEvent={handleSelectEvent}
+        onOpenCityModal={() => setIsCityModalOpen(true)}
+        onOpenStreamModal={() => setIsStreamModalOpen(true)}
+        onOpenOffersModal={() => setIsOffersModalOpen(true)}
+        onOpenGiftCardsModal={() => setIsGiftCardsModalOpen(true)}
+        onOpenListYourShowModal={() => setIsListYourShowModalOpen(true)}
+        onOpenCorporatesModal={() => setIsCorporatesModalOpen(true)}
+        onOpenUserProfileModal={() => setIsUserProfileModalOpen(true)}
         onReset={handleResetDemo}
         onOpenSystemInfo={() => setIsSystemInfoOpen(true)}
         onSimulateRace={handleSimulateRace}
@@ -385,13 +489,10 @@ export default function Home() {
       <main className="flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col items-center">
         {/* Movie Info & Showtime Strip */}
         <VenueStage
-          movieTitle={venueInfo?.movieTitle}
-          cinemaName={venueInfo?.cinemaName}
-          audiName={venueInfo?.audiName}
-          certificate={venueInfo?.certificate}
-          language={venueInfo?.language}
-          duration={venueInfo?.duration}
-          showtimes={venueInfo?.showtimes}
+          venueInfo={venueInfo}
+          selectedShowtime={selectedShowtime}
+          onSelectShowtime={setSelectedShowtime}
+          activeCity={activeCity}
         />
 
         {/* BMS Legend Bar */}
@@ -410,6 +511,9 @@ export default function Home() {
         {/* Floating BMS Bottom Pay Dock */}
         <HoldCountdown
           heldSeat={heldSeat}
+          venueInfo={venueInfo}
+          selectedShowtime={selectedShowtime}
+          appliedPromo={appliedPromo}
           onConfirmBooking={handleConfirmBooking}
           onReleaseSeat={handleReleaseSeat}
           isSubmitting={isSubmitting}
@@ -418,6 +522,8 @@ export default function Home() {
         {/* BMS Official M-Ticket Modal */}
         <BookingModal
           booking={confirmedBooking}
+          venueInfo={venueInfo}
+          selectedShowtime={selectedShowtime}
           onClose={() => setConfirmedBooking(null)}
         />
 
@@ -425,6 +531,60 @@ export default function Home() {
         <SystemInfoModal
           isOpen={isSystemInfoOpen}
           onClose={() => setIsSystemInfoOpen(false)}
+        />
+
+        {/* Interactive City Selector Modal */}
+        <CitySelectModal
+          isOpen={isCityModalOpen}
+          currentCity={activeCity}
+          onSelectCity={handleSelectCity}
+          onClose={() => setIsCityModalOpen(false)}
+        />
+
+        {/* Interactive Stream Window Modal */}
+        <StreamCatalogModal
+          isOpen={isStreamModalOpen}
+          onClose={() => setIsStreamModalOpen(false)}
+          onRented={(movie) => {
+            showToast("success", "Stream Pass Active", `"${movie.title}" is now available in your library for 30 days!`);
+          }}
+        />
+
+        {/* Interactive Offers & Promo Codes Modal */}
+        <OffersModal
+          isOpen={isOffersModalOpen}
+          activeCode={appliedPromo?.code}
+          onApplyPromo={handleApplyPromo}
+          onClose={() => setIsOffersModalOpen(false)}
+        />
+
+        {/* Interactive Gift Cards Modal */}
+        <GiftCardsModal
+          isOpen={isGiftCardsModalOpen}
+          onClose={() => setIsGiftCardsModalOpen(false)}
+        />
+
+        {/* Interactive ListYourShow Organizer Modal */}
+        <ListYourShowModal
+          isOpen={isListYourShowModalOpen}
+          onClose={() => setIsListYourShowModalOpen(false)}
+          onSubmitSuccess={(msg) => showToast("success", "Show Submitted", msg)}
+        />
+
+        {/* Interactive Corporates Modal */}
+        <CorporatesModal
+          isOpen={isCorporatesModalOpen}
+          onClose={() => setIsCorporatesModalOpen(false)}
+          onSubmitSuccess={(msg) => showToast("success", "Corporate Request Registered", msg)}
+        />
+
+        {/* Interactive User Profile & Identity Modal */}
+        <UserProfileModal
+          isOpen={isUserProfileModalOpen}
+          userId={userId}
+          onSwitchUser={handleSwitchUser}
+          confirmedBooking={confirmedBooking}
+          onClose={() => setIsUserProfileModalOpen(false)}
         />
 
         {/* Toast Alerts */}
