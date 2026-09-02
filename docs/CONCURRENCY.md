@@ -19,7 +19,7 @@ SET seat:{eventId}:{seatId} {userId} NX EX 300
 
 ### Why This is Provably Atomic and Race-Free
 
-1. **Single-Threaded Execution**: Redis processes commands sequentially on an internal single-threaded event loop. Even if 500 TCP requests hit the Redis server at the exact same microsecond, Redis serializes their execution in its command queue.
+1. **Single-Threaded Execution**: Redis processes commands sequentially on an internal single-threaded event loop. Even if 5,000 TCP requests hit the Redis server at the exact same microsecond, Redis serializes their execution in its command queue.
 2. **No Window of Ambiguity**: Unlike a naive SQL approach:
    ```sql
    -- BROKEN ANTI-PATTERN:

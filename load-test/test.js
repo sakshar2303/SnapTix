@@ -11,7 +11,7 @@
  */
 
 const SERVER_URL = process.env.SERVER_URL || "http://localhost:4000";
-const CONCURRENT_REQUESTS = parseInt(process.env.CONCURRENT_REQUESTS || "500", 10);
+const CONCURRENT_REQUESTS = parseInt(process.env.CONCURRENT_REQUESTS || "5000", 10);
 const TARGET_SEAT = process.env.TARGET_SEAT || "D5";
 const EVENT_ID = process.env.EVENT_ID || "venue-pvr-imax";
 

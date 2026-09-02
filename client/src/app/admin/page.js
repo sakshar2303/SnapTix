@@ -322,7 +322,7 @@ export default function AdminConsole() {
                 Simultaneous Contenders
               </label>
               <div className="flex items-center gap-2">
-                {[10, 50, 100, 500].map((count) => (
+                {[10, 50, 100, 500, 5000].map((count) => (
                   <button
                     key={count}
                     onClick={() => setContenderCount(count)}

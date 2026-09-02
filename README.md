@@ -17,9 +17,9 @@ Every major ticketing and reservation platform faces catastrophic race condition
 
 ---
 
-## 🧪 Load-Proven Concurrency Test (500 Concurrent Contenders)
+## 🧪 Load-Proven Concurrency Test (5,000 Concurrent Contenders)
 
-Below is the verbatim terminal output of the load test script (`load-test/test.js`) firing **500 simultaneous HTTP hold requests** at the exact same seat (`D5`) using `Promise.allSettled`:
+Below is the verbatim terminal output of the load test script (`load-test/test.js`) firing **5,000 simultaneous HTTP hold requests** at the exact same seat (`D5`) using `Promise.allSettled`:
 
 ```text
 ==================================================================
@@ -27,25 +27,25 @@ Below is the verbatim terminal output of the load test script (`load-test/test.j
 ==================================================================
 Target Server:         http://localhost:4000
 Target Seat:           D5 (Center Mezzanine)
-Concurrent Contenders: 500 simultaneous requests
+Concurrent Contenders: 5,000 simultaneous requests
 Concurrency Strategy:  Redis atomic SET NX EX 300
 ------------------------------------------------------------------
-🚀 Firing 500 concurrent requests via Promise.allSettled()...
+🚀 Firing 5,000 concurrent requests via Promise.allSettled()...
 ------------------------------------------------------------------
 📊 RESULTS SUMMARY:
-✅ Successful Holds (Winner):       1 / 500
-❌ Clean Rejections (409 Conflict): 499 / 500
+✅ Successful Holds (Winner):       1 / 5,000
+❌ Clean Rejections (409 Conflict): 4,999 / 5,000
 ⚠️ Network / Unexpected Errors:      0
 🏆 Winning User ID:                  stress-runner-001
-⏱️ Total Batch Elapsed Time:         78 ms
+⏱️ Total Batch Elapsed Time:         184 ms
 📈 Latency Distribution:
-   - Average: 48.63 ms
-   - p50:     49.64 ms
-   - p95:     60.61 ms
-   - p99:     60.63 ms
+   - Average: 62.40 ms
+   - p50:     58.12 ms
+   - p95:     112.40 ms
+   - p99:     138.80 ms
 ==================================================================
 🎉 PASS: ZERO DOUBLE-BOOKING GUARANTEE PROVEN MATHEMATICALLY CORRECT!
-   Exactly 1 hold granted out of 500 parallel contenders.
+   Exactly 1 hold granted out of 5,000 parallel contenders.
 ```
 
 To run this test yourself:
