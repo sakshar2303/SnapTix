@@ -168,11 +168,8 @@ export default function Home() {
     if (heldSeat) {
       handleReleaseSeat();
     }
-    const targetEventId = audi.id === "audi-2-insignia" || audi.id === "audi-1-4dx"
-      ? audi.id
-      : "venue-pvr-imax";
-    setActiveEventId(targetEventId);
-    joinEventRoom(targetEventId, userId);
+    // Stay on the currently selected event — do NOT reset to Dune
+    joinEventRoom(activeEventId, userId);
     showToast(
       "success",
       "Screen Selected",
