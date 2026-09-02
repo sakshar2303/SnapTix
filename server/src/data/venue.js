@@ -1,61 +1,61 @@
-// Architecturally authentic 72-seat amphitheater concert hall layout
-// 8 curved radial rows (A-H), 9 seats per row = 72 seats total
-// Radiating outward from the center stage with acoustic line-of-sight sightlines
+// Teenage Engineering / Precision Hardware Theme
+// 8 curved radial amphitheater rows (A-H), 9 acoustic pods per row = 72 seats total
+// Radiating from the Acoustic Emitter Stage with precision CAD coordinates
 
 export const VENUE_INFO = {
-  id: "venue-grand-hall",
-  name: "Kuroshio Concert Hall",
-  location: "Neo-Tokyo Arts District • Main Amphitheater",
-  eventName: "Cyber Symphony 2026: Live in Neo-Tokyo",
-  date: "Friday, November 14, 2026 • 8:00 PM JST",
+  id: "venue-synth-lab",
+  name: "SYNTH LAB 01 • FIELD ACOUSTICS HALL",
+  location: "CH-1004 RESEARCH CAMPUS • SOUND EMITTER GRID",
+  eventName: "FREQUENCY PROTOCOL 2026 // LIVE MODULAR FIELD",
+  date: "2026.11.14 // 20:00 UTC // ACOUSTIC CHAMBER A",
   totalSeats: 72,
-  stageLabel: "PROSCENIUM ARCH • ACOUSTIC CENTER STAGE",
+  stageLabel: "[ STAGE PROSCENIUM // ACOUSTIC EMITTER 01 ]",
 };
 
 export const TIERS = {
   VIP: {
-    name: "Prime Orchestra",
+    name: "PRIME ACOUSTIC POD",
     price: 150,
-    color: "#EAB308", // gold-500
-    accentHex: "#FACC15",
-    glowColor: "rgba(234, 179, 8, 0.4)",
-    badge: "Gold VIP",
-    sightline: "Direct 180° Acoustic Field • Pure Front Row",
-    features: ["Complimentary Lounge Access", "Acoustic Sweet Spot", "Dedicated Concierge"],
+    color: "#FF9500", // Phosphor Amber / Teenage Engineering Orange
+    accentHex: "#FFB03A",
+    glowColor: "rgba(255, 149, 0, 0.4)",
+    badge: "VIP FIELD",
+    sightline: "0.1ms Phase Coherence • Direct Transducer Line",
+    features: ["Dedicated Line Out Monitoring", "Zero-Reflection Position", "Hardware Console Access"],
   },
   PREFERRED: {
-    name: "Grand Mezzanine",
+    name: "MID-FIELD CONSOLE",
     price: 95,
-    color: "#38BDF8", // sky-400
-    accentHex: "#60A5FA",
-    glowColor: "rgba(56, 189, 248, 0.4)",
-    badge: "Preferred",
-    sightline: "Elevated Center Tier • Balanced Hall Sound",
-    features: ["Optimal Visual Panorama", "Enhanced Legroom", "Express Entry"],
+    color: "#E2E8F0", // Titanium Bone White
+    accentHex: "#FFFFFF",
+    glowColor: "rgba(226, 232, 240, 0.3)",
+    badge: "MID-FIELD",
+    sightline: "Balanced Binaural Center • Elevated Console Plane",
+    features: ["Binaural Stereo Sweet Spot", "Expanded Console Stance", "Priority Signal Ingest"],
   },
   STANDARD: {
-    name: "Royal Balcony",
+    name: "PERIMETER ARRAY",
     price: 55,
-    color: "#34D399", // emerald-400
-    accentHex: "#10B981",
-    glowColor: "rgba(52, 211, 153, 0.4)",
-    badge: "Balcony",
-    sightline: "Panoramic Overlook • Reverberant Hall Ambience",
-    features: ["Panoramic Stage Vista", "Private Balcony Bar Access"],
+    color: "#8E95A5", // Industrial Concrete Slate
+    accentHex: "#94A3B8",
+    glowColor: "rgba(142, 149, 165, 0.25)",
+    badge: "PERIMETER",
+    sightline: "Ambient Reverb Boundary • Spatial Diffusion Vista",
+    features: ["Panoramic Chamber Vista", "Ambient Soundfield Overlook"],
   },
 };
 
 export const INITIAL_SEATS = [];
 
 const rows = [
-  { row: "A", tier: "VIP", section: "Orchestra Tier 1" },
-  { row: "B", tier: "VIP", section: "Orchestra Tier 2" },
-  { row: "C", tier: "PREFERRED", section: "Mezzanine Loge 1" },
-  { row: "D", tier: "PREFERRED", section: "Mezzanine Loge 2" },
-  { row: "E", tier: "PREFERRED", section: "Mezzanine Loge 3" },
-  { row: "F", tier: "STANDARD", section: "Upper Balcony A" },
-  { row: "G", tier: "STANDARD", section: "Upper Balcony B" },
-  { row: "H", tier: "STANDARD", section: "Upper Balcony C" },
+  { row: "A", tier: "VIP", section: "SECTOR A // FRONT POD" },
+  { row: "B", tier: "VIP", section: "SECTOR B // FRONT POD" },
+  { row: "C", tier: "PREFERRED", section: "SECTOR C // CONSOLE ROW" },
+  { row: "D", tier: "PREFERRED", section: "SECTOR D // CONSOLE ROW" },
+  { row: "E", tier: "PREFERRED", section: "SECTOR E // CONSOLE ROW" },
+  { row: "F", tier: "STANDARD", section: "SECTOR F // PERIMETER ROW" },
+  { row: "G", tier: "STANDARD", section: "SECTOR G // PERIMETER ROW" },
+  { row: "H", tier: "STANDARD", section: "SECTOR H // PERIMETER ROW" },
 ];
 
 const cols = 9;
@@ -66,24 +66,19 @@ rows.forEach((r, rowIndex) => {
   const radius = 235 + rowIndex * 44;
 
   for (let c = 1; c <= cols; c++) {
-    // 9 seats centered around angle 0:
-    // Indices: 1..9 -> normalized -4 to +4
     const normalizedIndex = c - 5;
-    
-    // Base step 5.2 degrees per seat
     let angleDeg = normalizedIndex * 5.2;
 
-    // Add physical aisle gaps between seat 3 & 4, and seat 6 & 7
     if (c <= 3) {
-      angleDeg -= 3.2; // Left loge wing
+      angleDeg -= 3.2;
     } else if (c >= 7) {
-      angleDeg += 3.2; // Right loge wing
+      angleDeg += 3.2;
     }
 
     const angleRad = (angleDeg * Math.PI) / 180;
     const x = Math.round(FOCAL_X + radius * Math.sin(angleRad));
     const y = Math.round(FOCAL_Y + radius * Math.cos(angleRad));
-    const rotation = Math.round(-angleDeg); // Face towards stage focal point
+    const rotation = Math.round(-angleDeg);
 
     const tierObj = TIERS[r.tier];
 
@@ -95,7 +90,7 @@ rows.forEach((r, rowIndex) => {
       tier: r.tier,
       section: r.section,
       price: tierObj.price,
-      status: "available", // 'available' | 'held' | 'booked'
+      status: "available",
       x,
       y,
       rotation,

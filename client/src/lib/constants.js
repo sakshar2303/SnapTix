@@ -1,32 +1,32 @@
 export const TIERS = {
   VIP: {
-    name: "Prime Orchestra",
+    name: "PRIME ACOUSTIC POD",
     price: 150,
-    color: "#EAB308", // gold-500
-    accentHex: "#FACC15",
-    glowColor: "rgba(234, 179, 8, 0.4)",
-    badge: "Gold VIP",
-    sightline: "Direct 180° Acoustic Field • Pure Front Row",
-    features: ["Complimentary Lounge Access", "Acoustic Sweet Spot", "Dedicated Concierge"],
+    color: "#FF9500", // Phosphor Amber / Teenage Engineering Orange
+    accentHex: "#FFB03A",
+    glowColor: "rgba(255, 149, 0, 0.4)",
+    badge: "VIP FIELD",
+    sightline: "0.1ms Phase Coherence • Direct Transducer Line",
+    features: ["Dedicated Line Out Monitoring", "Zero-Reflection Position", "Hardware Console Access"],
   },
   PREFERRED: {
-    name: "Grand Mezzanine",
+    name: "MID-FIELD CONSOLE",
     price: 95,
-    color: "#38BDF8", // sky-400
-    accentHex: "#60A5FA",
-    glowColor: "rgba(56, 189, 248, 0.4)",
-    badge: "Preferred",
-    sightline: "Elevated Center Tier • Balanced Hall Sound",
-    features: ["Optimal Visual Panorama", "Enhanced Legroom", "Express Entry"],
+    color: "#E2E8F0", // Titanium Bone White
+    accentHex: "#FFFFFF",
+    glowColor: "rgba(226, 232, 240, 0.3)",
+    badge: "MID-FIELD",
+    sightline: "Balanced Binaural Center • Elevated Console Plane",
+    features: ["Binaural Stereo Sweet Spot", "Expanded Console Stance", "Priority Signal Ingest"],
   },
   STANDARD: {
-    name: "Royal Balcony",
+    name: "PERIMETER ARRAY",
     price: 55,
-    color: "#34D399", // emerald-400
-    accentHex: "#10B981",
-    glowColor: "rgba(52, 211, 153, 0.4)",
-    badge: "Balcony",
-    sightline: "Panoramic Overlook • Reverberant Hall Ambience",
-    features: ["Panoramic Stage Vista", "Private Balcony Bar Access"],
+    color: "#8E95A5", // Industrial Concrete Slate
+    accentHex: "#94A3B8",
+    glowColor: "rgba(142, 149, 165, 0.25)",
+    badge: "PERIMETER",
+    sightline: "Ambient Reverb Boundary • Spatial Diffusion Vista",
+    features: ["Panoramic Chamber Vista", "Ambient Soundfield Overlook"],
   },
 };

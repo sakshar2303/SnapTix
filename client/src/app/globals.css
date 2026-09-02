@@ -2,72 +2,110 @@
 
 @layer base {
   :root {
-    --bg-surface: #07080B;
-    --card-surface: #0E1015;
-    --card-border: rgba(255, 255, 255, 0.08);
+    --bg-basalt: #0C0D11;
+    --panel-surface: #13151B;
+    --panel-border: #232731;
+    --hairline-silver: rgba(255, 255, 255, 0.12);
+    --amber-phosphor: #FF9500;
   }
 
   body {
-    background-color: var(--bg-surface);
-    color: #F1F5F9;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    background-color: var(--bg-basalt);
+    color: #E2E8F0;
+    font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    letter-spacing: -0.01em;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
   }
 }
 
-/* Custom subtle ambient grid & stage illumination */
-.ambient-glow {
-  background: radial-gradient(circle at 50% -10%, rgba(99, 102, 241, 0.15), transparent 65%);
+/* Teenage Engineering Technical Dot Grid */
+.te-grid-bg {
+  background-color: #0C0D11;
+  background-image: radial-gradient(#262A35 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
-.stage-spotlight {
-  background: radial-gradient(ellipse at 50% 0%, rgba(129, 140, 248, 0.22) 0%, rgba(99, 102, 241, 0.08) 45%, transparent 75%);
+/* Hardware Faceplate Panel */
+.te-chassis {
+  background: #14161C;
+  border: 1px solid #282C37;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 
-/* Custom sleek scrollbar */
-::-webkit-scrollbar {
+.te-chassis-inset {
+  background: #0E0F14;
+  border: 1px solid #1F222B;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Tactile Hardware Push Button */
+.te-button {
+  background: #1C1F27;
+  border: 1px solid #363B49;
+  box-shadow: 0 2px 0 #101216, inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.1s ease-in-out;
+}
+
+.te-button:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #101216, inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.te-button-accent {
+  background: #FF9500;
+  color: #000000;
+  font-weight: 800;
+  border: 1px solid #FFAE33;
+  box-shadow: 0 2px 0 #995A00, inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.te-button-accent:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 #995A00;
+}
+
+/* Precision Fastener (Corner Hex Screws) */
+.te-screw {
   width: 6px;
   height: 6px;
+  border-radius: 50%;
+  background: #252833;
+  border: 1px solid #3E4354;
+  box-shadow: inset 0 0.5px 0.5px rgba(255, 255, 255, 0.2);
+  position: relative;
+}
+.te-screw::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 1px;
+  right: 1px;
+  height: 1px;
+  background: #14161C;
+}
+
+/* CRT / Phosphor Display Filter */
+.te-display {
+  background: #080A0D;
+  border: 1px solid #20242E;
+  color: #FF9500;
+  font-family: var(--font-geist-mono), monospace;
+  text-shadow: 0 0 6px rgba(255, 149, 0, 0.5);
+}
+
+/* Custom Sleek Monospace Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #090B0E;
+  background: #0C0D11;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1E293B;
-  border-radius: 9999px;
+  background: #262A36;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
-}
-
-/* Glass panel utility */
-.glass-panel {
-  background: rgba(14, 17, 24, 0.78);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-}
-
-.glass-panel-elevated {
-  background: rgba(18, 22, 32, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), 0 0 30px -10px rgba(99, 102, 241, 0.15);
-}
-
-/* Seat hover pulse */
-@keyframes seat-pulse {
-  0%, 100% {
-    filter: drop-shadow(0 0 3px rgba(56, 189, 248, 0.8));
-  }
-  50% {
-    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 1));
-  }
-}
-
-.animate-seat-hold {
-  animation: seat-pulse 2s infinite ease-in-out;
+  background: #3A4050;
 }

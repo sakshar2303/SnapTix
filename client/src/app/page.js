@@ -45,10 +45,10 @@ export default function Home() {
         const start = performance.now();
         socketRef.current.emit("ping_latency", () => {
           const roundTrip = Math.round(performance.now() - start);
-          setLatency(Math.max(4, roundTrip));
+          setLatency(Math.max(2, roundTrip));
         });
       }
-    }, 4000);
+    }, 3500);
     return () => clearInterval(interval);
   }, [isConnected]);
 
@@ -63,7 +63,7 @@ export default function Home() {
     socket.on("connect", () => {
       setIsConnected(true);
       socket.emit("join_event", {
-        eventId: "venue-grand-hall",
+        eventId: "venue-synth-lab",
         userId: currentUserId,
       });
     });
@@ -117,8 +117,8 @@ export default function Home() {
         });
         showToast(
           "success",
-          `Seat ${seatId} Held`,
-          "Exclusive lock confirmed via Redis SET NX EX. Complete checkout within 5:00."
+          `POD_${seatId} ALLOCATED`,
+          "Atomic lock confirmed via Redis SET_NX_EX_300. Complete checkout within 5:00."
         );
       }
     });
@@ -127,8 +127,8 @@ export default function Home() {
     socket.on("hold_rejected", ({ seatId, reason }) => {
       showToast(
         "collision",
-        "Race Condition: Seat Taken!",
-        reason || `Seat ${seatId} was claimed by another attendee milliseconds before you!`
+        "RACE_COLLISION: POD_CLAIMED",
+        reason || `Pod ${seatId} was claimed by another operator milliseconds before you!`
       );
     });
 
@@ -154,8 +154,8 @@ export default function Home() {
         if (prev && prev.id === seatId) {
           showToast(
             "warning",
-            reason === "EXPIRED" ? "Hold Expired" : "Seat Released",
-            `Seat ${seatId} has been returned to available hall inventory.`
+            reason === "EXPIRED" ? "HOLD_EXPIRED" : "POD_RELEASED",
+            `Pod ${seatId} has been returned to field pool.`
           );
           return null;
         }
@@ -216,9 +216,9 @@ export default function Home() {
     socket.on("event_reset", () => {
       setHeldSeat(null);
       setPresenceMap({});
-      showToast("success", "Hall Inventory Reset", "All seat holds and bookings have been cleared.");
+      showToast("success", "INVENTORY_RESET", "All pod locks and records cleared.");
       socket.emit("join_event", {
-        eventId: "venue-grand-hall",
+        eventId: "venue-synth-lab",
         userId: currentUserId,
       });
     });
@@ -239,7 +239,7 @@ export default function Home() {
   // Click seat action
   const handleSeatClick = (seat) => {
     if (seat.status === "booked") {
-      showToast("error", "Seat Booked", `Seat ${seat.label} is permanently reserved.`);
+      showToast("error", "POD_BOOKED", `Pod ${seat.label} is permanently reserved in database.`);
       return;
     }
 
@@ -249,8 +249,8 @@ export default function Home() {
       } else {
         showToast(
           "warning",
-          "Seat Locked",
-          `Seat ${seat.label} is currently held by another attendee.`
+          "POD_LOCKED",
+          `Pod ${seat.label} is currently held by another operator.`
         );
         return;
       }
@@ -259,7 +259,7 @@ export default function Home() {
     // Atomic hold via Socket.io
     if (socketRef.current) {
       socketRef.current.emit("hold_seat", {
-        eventId: "venue-grand-hall",
+        eventId: "venue-synth-lab",
         seatId: seat.id,
         userId,
       });
@@ -283,7 +283,7 @@ export default function Home() {
   const handleReleaseSeat = (seat) => {
     if (socketRef.current && seat) {
       socketRef.current.emit("release_seat", {
-        eventId: "venue-grand-hall",
+        eventId: "venue-synth-lab",
         seatId: seat.id,
         userId,
       });
@@ -299,14 +299,14 @@ export default function Home() {
     socketRef.current.emit(
       "confirm_booking",
       {
-        eventId: "venue-grand-hall",
+        eventId: "venue-synth-lab",
         seatId: seat.id,
         userId,
       },
       (response) => {
         setIsSubmitting(false);
         if (!response.success) {
-          showToast("error", "Checkout Failed", response.message || response.error);
+          showToast("error", "CHECKOUT_FAILED", response.message || response.error);
         }
       }
     );
@@ -320,7 +320,7 @@ export default function Home() {
       await fetch(`${serverUrl}/api/reset`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventId: "venue-grand-hall" }),
+        body: JSON.stringify({ eventId: "venue-synth-lab" }),
       });
     } catch (err) {
       console.error("Failed to reset:", err);
@@ -330,17 +330,16 @@ export default function Home() {
   // Live 10-Contender Collision Simulator
   const handleSimulateRace = async () => {
     setIsSimulating(true);
-    const targetSeat = "A5"; // Center VIP Orchestra seat
+    const targetSeat = "A5"; // Center VIP Pod
     const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:4000";
 
-    showToast("collision", "Race Test Started", `Firing 10 simultaneous hold requests at seat ${targetSeat}...`);
+    showToast("collision", "COLLISION_BURST_INIT", `Firing 10 concurrent requests at Pod ${targetSeat}...`);
 
     try {
-      // 10 concurrent requests at exact same millisecond
       const contenders = Array.from({ length: 10 }, (_, i) => ({
         userId: `racer-${Math.random().toString(36).substring(2, 6)}`,
         seatId: targetSeat,
-        eventId: "venue-grand-hall",
+        eventId: "venue-synth-lab",
       }));
 
       const requests = contenders.map((c) =>
@@ -358,23 +357,20 @@ export default function Home() {
       setTimeout(() => {
         showToast(
           "success",
-          "Concurrency Test Verified!",
-          `10 contenders fired → Exactly ${successes} succeeded, ${rejections} cleanly rejected with zero double-booking!`
+          "CONCURRENCY_TEST_PASSED",
+          `10 contenders fired → Exactly ${successes} succeeded, ${rejections} cleanly rejected. Zero double-booking.`
         );
         setIsSimulating(false);
-      }, 500);
+      }, 400);
     } catch (err) {
-      showToast("error", "Test Error", err.message);
+      showToast("error", "TEST_ERROR", err.message);
       setIsSimulating(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#07080B] text-slate-100 selection:bg-sky-500 selection:text-white">
-      {/* Background ambient lighting */}
-      <div className="fixed inset-0 ambient-glow pointer-events-none z-0"></div>
-
-      {/* Top Header & Telemetry Flight Deck */}
+    <div className="min-h-screen flex flex-col te-grid-bg text-slate-100 font-mono">
+      {/* Top Hardware Header */}
       <Header
         userId={userId}
         isConnected={isConnected}
@@ -386,9 +382,9 @@ export default function Home() {
         isSimulating={isSimulating}
       />
 
-      {/* Main Amphitheater Arena */}
-      <main className="relative z-10 flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col items-center">
-        {/* Stage Component */}
+      {/* Main Hardware Laboratory Arena */}
+      <main className="relative z-10 flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-7 flex flex-col items-center">
+        {/* Emitter Stage Component */}
         <VenueStage
           eventName={venueInfo?.eventName}
           date={venueInfo?.date}
@@ -396,13 +392,13 @@ export default function Home() {
           stageLabel={venueInfo?.stageLabel}
         />
 
-        {/* Legend and Heatmap Controls */}
+        {/* Legend / Selector */}
         <SeatLegend
           showHeatmap={showHeatmap}
           onToggleHeatmap={() => setShowHeatmap(!showHeatmap)}
         />
 
-        {/* Curved Radial SVG Seat Map */}
+        {/* Polar Modular CAD Seat Map */}
         <SeatMap
           seats={seats}
           myUserId={userId}
@@ -413,7 +409,7 @@ export default function Home() {
           showHeatmap={showHeatmap}
         />
 
-        {/* Integrated Ticket Booking Dock */}
+        {/* Tactical Tape / LED Countdown Dock */}
         <HoldCountdown
           heldSeat={heldSeat}
           onConfirmBooking={handleConfirmBooking}
@@ -421,30 +417,30 @@ export default function Home() {
           isSubmitting={isSubmitting}
         />
 
-        {/* Digital Holographic Admission Pass Modal */}
+        {/* Cryptographic Allocation Spec Sheet Modal */}
         <BookingModal
           booking={confirmedBooking}
           onClose={() => setConfirmedBooking(null)}
         />
 
-        {/* System Architecture & Concurrency Proof Modal */}
+        {/* System Architecture Specifications Modal */}
         <SystemInfoModal
           isOpen={isSystemInfoOpen}
           onClose={() => setIsSystemInfoOpen(false)}
         />
 
-        {/* Toast Alerts */}
+        {/* Tactical Toast Alerts */}
         <Toast toast={toast} onDismiss={() => setToast(null)} />
       </main>
 
-      {/* Architectural Minimal Footer */}
-      <footer className="relative z-10 w-full border-t border-white/[0.06] py-6 px-4 text-center text-xs text-slate-500">
-        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="font-medium text-slate-400">
-            SnapTix Real-Time Infrastructure • Kuroshio Concert Hall Seating System
+      {/* Industrial Chassis Minimal Footer */}
+      <footer className="relative z-10 w-full border-t border-[#1E2330] bg-[#0E1015] py-5 px-4 text-center text-xs text-slate-500 font-mono">
+        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2.5">
+          <span className="font-semibold text-slate-400">
+            [SYNTH LAB 01] • SNAP-TIX CONCURRENCY CORE // REV.4
           </span>
-          <span className="font-mono text-[11px] text-slate-500">
-            Redis SET NX EX + Socket.io Multi-Pod Adapter + Neon Postgres Ledger
+          <span className="text-[10px] text-slate-500">
+            REDIS_SET_NX_EX_300 • CLUSTER_PUB_SUB • NEON_POSTGRES_DURABLE
           </span>
         </div>
       </footer>
