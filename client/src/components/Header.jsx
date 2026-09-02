@@ -14,6 +14,7 @@ import {
   Calendar,
   Sparkles,
 } from "lucide-react";
+import SnapTixLogo from "./SnapTixLogo";
 
 export default function Header({
   userId,
@@ -82,15 +83,9 @@ export default function Header({
         <div className="flex items-center gap-4">
           <div
             onClick={() => onSelectCategory("Movies")}
-            className="flex items-center gap-1.5 cursor-pointer select-none group"
+            className="cursor-pointer select-none group hover:opacity-95 transition"
           >
-            <div className="w-8 h-8 rounded-lg bg-[#F84464] flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-              <Film className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex items-baseline font-black tracking-tight">
-              <span className="text-white text-xl">Snap</span>
-              <span className="text-[#F84464] text-xl">Tix</span>
-            </div>
+            <SnapTixLogo size={34} />
           </div>
 
           {/* Interactive City Selector Dropdown */}

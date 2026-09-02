@@ -9,6 +9,7 @@ import {
   X,
   Download,
 } from "lucide-react";
+import { SnapTixMark } from "./SnapTixLogo";
 
 export default function BookingModal({ booking, venueInfo, selectedShowtime, onClose }) {
   useEffect(() => {
@@ -67,8 +68,8 @@ export default function BookingModal({ booking, venueInfo, selectedShowtime, onC
                 {venueInfo?.subtitle || "PVR INOX: Phoenix Palladium • Audi 4"}
               </p>
             </div>
-            <div className="w-10 h-10 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-[#F84464]">
-              <Film className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
+              <SnapTixMark size={36} />
             </div>
           </div>
 
