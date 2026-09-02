@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Check, Search, MapPin } from "lucide-react";
+import { X, Check, Search, MapPin, Navigation } from "lucide-react";
 
 export const POPULAR_CITIES = [
   { name: "Mumbai", state: "Maharashtra" },
@@ -29,7 +29,14 @@ export const OTHER_CITIES = [
   "Coimbatore",
 ];
 
-export default function CitySelectModal({ isOpen, currentCity, onSelectCity, onClose }) {
+export default function CitySelectModal({
+  isOpen,
+  currentCity,
+  onSelectCity,
+  onDetectLocation,
+  isDetectingLocation,
+  onClose,
+}) {
   const [search, setSearch] = useState("");
 
   if (!isOpen) return null;
@@ -80,6 +87,17 @@ export default function CitySelectModal({ isOpen, currentCity, onSelectCity, onC
               autoFocus
             />
           </div>
+
+          {/* GPS Auto-Detect Button */}
+          <button
+            type="button"
+            onClick={onDetectLocation}
+            disabled={isDetectingLocation}
+            className="w-full mt-2.5 py-2 px-3 rounded-lg bg-white border border-slate-200 hover:border-[#F84464] text-[#F84464] text-xs font-semibold flex items-center justify-center gap-1.5 transition cursor-pointer shadow-2xs"
+          >
+            <Navigation className={`w-3.5 h-3.5 text-[#F84464] ${isDetectingLocation ? "animate-spin" : ""}`} />
+            <span>{isDetectingLocation ? "Detecting GPS location..." : "Auto-Detect My City via GPS"}</span>
+          </button>
         </div>
 
         {/* City Options List */}

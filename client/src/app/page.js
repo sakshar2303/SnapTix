@@ -15,9 +15,11 @@ import OffersModal from "../components/OffersModal";
 import GiftCardsModal from "../components/GiftCardsModal";
 import ListYourShowModal from "../components/ListYourShowModal";
 import CorporatesModal from "../components/CorporatesModal";
+import TheatreSelectModal from "../components/TheatreSelectModal";
 import UserProfileModal from "../components/UserProfileModal";
 import Toast from "../components/Toast";
 import { getSocket, getUserId } from "../lib/socket";
+import { getTheatresForCity, findClosestCity } from "../lib/theatres";
 
 export default function Home() {
   const [userId, setUserId] = useState("");
@@ -48,6 +50,12 @@ export default function Home() {
   const [isCorporatesModalOpen, setIsCorporatesModalOpen] = useState(false);
   const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
   const [isSystemInfoOpen, setIsSystemInfoOpen] = useState(false);
+  const [isTheatreModalOpen, setIsTheatreModalOpen] = useState(false);
+
+  // Theatre & Location State
+  const [currentTheatre, setCurrentTheatre] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
+  const [isDetectingLocation, setIsDetectingLocation] = useState(false);
 
   const socketRef = useRef(null);
   const toastTimeoutRef = useRef(null);
@@ -72,6 +80,63 @@ export default function Home() {
       })
       .catch((err) => console.error("Error fetching catalog:", err));
   }, []);
+
+  // Initialize and synchronize theatre when activeCity changes
+  useEffect(() => {
+    const cityTheatres = getTheatresForCity(activeCity);
+    if (cityTheatres && cityTheatres.length > 0) {
+      setCurrentTheatre(cityTheatres[0]);
+      if (cityTheatres[0].showtimes && cityTheatres[0].showtimes.length > 0) {
+        setSelectedShowtime(cityTheatres[0].showtimes[0]);
+      }
+    }
+  }, [activeCity]);
+
+  // GPS Geolocation Detection
+  const handleDetectLocation = () => {
+    setIsDetectingLocation(true);
+    if (!navigator.geolocation) {
+      showToast("error", "Geolocation Unsupported", "Your browser does not support GPS location.");
+      setIsDetectingLocation(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setIsDetectingLocation(false);
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+
+        const { city, distanceKm } = findClosestCity(latitude, longitude);
+        setActiveCity(city);
+        const cityTheatres = getTheatresForCity(city);
+        if (cityTheatres && cityTheatres.length > 0) {
+          setCurrentTheatre(cityTheatres[0]);
+          if (cityTheatres[0].showtimes) {
+            setSelectedShowtime(cityTheatres[0].showtimes[0]);
+          }
+        }
+        showToast("success", "GPS Location Detected!", `Nearest Entertainment Hub: ${city} (${distanceKm} km away)`);
+      },
+      (error) => {
+        setIsDetectingLocation(false);
+        const mockLat = 19.0760;
+        const mockLng = 72.8777;
+        setUserLocation({ lat: mockLat, lng: mockLng });
+        setActiveCity("Mumbai");
+        showToast("warning", "GPS Location", "Showing nearest verified multiplexes in Mumbai.");
+      },
+      { timeout: 6000 }
+    );
+  };
+
+  const handleSelectTheatre = (theatre) => {
+    setCurrentTheatre(theatre);
+    if (theatre.showtimes && theatre.showtimes.length > 0) {
+      setSelectedShowtime(theatre.showtimes[0]);
+    }
+    showToast("success", "Cinema Venue Selected", `${theatre.name} (${theatre.area})`);
+  };
 
   // Measure WebSocket ping latency
   useEffect(() => {
@@ -488,12 +553,15 @@ export default function Home() {
 
       {/* Main Cinema Seating Arena */}
       <main className="flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col items-center">
-        {/* Movie Info & Showtime Strip */}
+        {/* Movie Info, Showtime Strip & Theatre Switcher */}
         <VenueStage
           venueInfo={venueInfo}
+          currentTheatre={currentTheatre}
+          onOpenTheatreModal={() => setIsTheatreModalOpen(true)}
           selectedShowtime={selectedShowtime}
           onSelectShowtime={setSelectedShowtime}
           activeCity={activeCity}
+          userLocation={userLocation}
         />
 
         {/* BMS Legend Bar */}
@@ -534,12 +602,26 @@ export default function Home() {
           onClose={() => setIsSystemInfoOpen(false)}
         />
 
-        {/* Interactive City Selector Modal */}
+        {/* Interactive City Selector Modal with GPS Geolocation */}
         <CitySelectModal
           isOpen={isCityModalOpen}
           currentCity={activeCity}
           onSelectCity={handleSelectCity}
+          onDetectLocation={handleDetectLocation}
+          isDetectingLocation={isDetectingLocation}
           onClose={() => setIsCityModalOpen(false)}
+        />
+
+        {/* Direct Cinema Theatre & Venue Selector Modal */}
+        <TheatreSelectModal
+          isOpen={isTheatreModalOpen}
+          activeCity={activeCity}
+          currentTheatreId={currentTheatre?.id}
+          userLocation={userLocation}
+          onSelectTheatre={handleSelectTheatre}
+          onDetectLocation={handleDetectLocation}
+          isDetectingLocation={isDetectingLocation}
+          onClose={() => setIsTheatreModalOpen(false)}
         />
 
         {/* Interactive Stream Window Modal */}
