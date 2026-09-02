@@ -1,139 +1,222 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 import {
   CheckCircle,
   QrCode,
-  Film,
   X,
   Download,
+  Share2,
+  Ticket,
+  MapPin,
+  Clock,
+  Calendar,
+  Star,
+  Zap,
 } from "lucide-react";
 import { SnapTixMark } from "./SnapTixLogo";
 
+function generateQRPattern(bookingId) {
+  // Deterministic tiny QR-like pattern based on booking ID hash
+  const seed = bookingId ? bookingId.charCodeAt(0) + bookingId.length : 42;
+  return Array.from({ length: 49 }, (_, i) => (((seed * (i + 1) * 7) % 13 > 5) ? 1 : 0));
+}
+
 export default function BookingModal({ booking, venueInfo, selectedShowtime, onClose }) {
+  const [showDownloadAnim, setShowDownloadAnim] = useState(false);
+
   useEffect(() => {
     if (booking) {
-      try {
+      // Multi-burst confetti
+      const burst = (origin, colors) =>
         confetti({
-          particleCount: 90,
-          spread: 75,
-          origin: { y: 0.6 },
-          colors: ["#F84464", "#1EA83C", "#00B9F5", "#222433"],
+          particleCount: 70,
+          spread: 80,
+          origin,
+          colors,
+          scalar: 1.1,
+          gravity: 0.9,
         });
-      } catch (err) {
-        // fallback
-      }
+
+      try {
+        setTimeout(() => burst({ x: 0.3, y: 0.5 }, ["#F84464", "#ff6b87", "#222433"]), 0);
+        setTimeout(() => burst({ x: 0.7, y: 0.5 }, ["#1EA83C", "#00B9F5", "#FFD700"]), 150);
+        setTimeout(() => burst({ x: 0.5, y: 0.4 }, ["#F84464", "#ffffff", "#1EA83C"]), 300);
+      } catch (_) {}
     }
   }, [booking]);
 
   if (!booking) return null;
 
+  const qrPattern = generateQRPattern(booking.bookingId || "BMS-X");
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+
+  const handleDownload = () => {
+    setShowDownloadAnim(true);
+    setTimeout(() => setShowDownloadAnim(false), 2000);
+    // In a real app: generate PDF with jsPDF / html2canvas
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="relative w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-2xl text-[#222433] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <div className="relative w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl text-[#222433]">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-3 z-10 p-1.5 text-white/80 hover:text-white rounded-full bg-black/20 hover:bg-black/40 transition cursor-pointer"
+          className="absolute top-3.5 right-3.5 z-10 p-1.5 text-white/80 hover:text-white rounded-full bg-black/30 hover:bg-black/50 transition cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
 
-        {/* Top Crimson Banner */}
-        <div className="bg-[#F84464] px-6 py-4 text-center relative">
-          <span className="text-[10px] font-black uppercase tracking-widest text-white/90">
-            OFFICIAL SNAPTIX M-TICKET
-          </span>
-          <h3 className="text-xl font-black text-white mt-0.5">
-            Booking Confirmed!
-          </h3>
+        {/* Top Banner */}
+        <div className="bg-gradient-to-br from-[#F84464] to-[#c22040] px-6 py-5 text-center relative overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            {[...Array(8)].map((_, i) => (
+              <div
+                key={i}
+                className="absolute w-16 h-16 rounded-full border-2 border-white"
+                style={{
+                  left: `${(i * 15) % 100}%`,
+                  top: `${(i * 25) % 100}%`,
+                  opacity: 0.3,
+                }}
+              />
+            ))}
+          </div>
+          <div className="relative">
+            <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-2">
+              <CheckCircle className="w-8 h-8 text-white" />
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-white/80 block">
+              OFFICIAL SNAPTIX M-TICKET
+            </span>
+            <h3 className="text-2xl font-black text-white mt-1">Booking Confirmed!</h3>
+          </div>
+        </div>
+
+        {/* Ticket Notch Divider */}
+        <div className="relative flex items-center -mt-px">
+          <div className="w-6 h-6 rounded-full bg-slate-100 -ml-3 shrink-0 border border-slate-200" />
+          <div className="flex-1 border-t-2 border-dashed border-slate-200 mx-2" />
+          <div className="w-6 h-6 rounded-full bg-slate-100 -mr-3 shrink-0 border border-slate-200" />
         </div>
 
         {/* Ticket Body */}
-        <div className="p-6">
-          {/* Movie Title & Format */}
-          <div className="flex items-start justify-between border-b border-slate-100 pb-4 mb-4">
+        <div className="px-6 py-4 space-y-4">
+          {/* Show Name */}
+          <div className="flex items-start justify-between">
             <div>
-              <div className="flex items-center gap-1.5 mb-1">
-                <span className="px-1.5 py-0.2 rounded bg-[#F84464]/10 text-[#F84464] text-[10px] font-bold border border-[#F84464]/20">
+              <h4 className="font-black text-base text-[#222433] leading-tight">
+                {venueInfo?.title || "DUNE: PART TWO"}
+              </h4>
+              <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-[#F84464]" />
+                {venueInfo?.subtitle || "PVR INOX: Phoenix Palladium"}
+              </p>
+              <div className="flex items-center gap-2 mt-1.5">
+                <span className="px-2 py-0.5 rounded bg-[#F84464]/10 text-[#F84464] text-[10px] font-bold border border-[#F84464]/20">
                   {venueInfo?.format || "IMAX 2D"}
                 </span>
                 <span className="text-[10px] text-slate-400">{venueInfo?.rating || "UA 16+"}</span>
               </div>
-              <h4 className="font-black text-lg text-[#222433]">
-                {venueInfo?.title || "DUNE: PART TWO"}
-              </h4>
-              <p className="text-xs text-slate-500 mt-0.5">
-                {venueInfo?.subtitle || "PVR INOX: Phoenix Palladium • Audi 4"}
-              </p>
             </div>
-            <div className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center shrink-0">
+            <div className="shrink-0">
               <SnapTixMark size={36} />
             </div>
           </div>
 
-          {/* Show Details Grid */}
-          <div className="grid grid-cols-2 gap-3 py-1 text-xs mb-4">
-            <div>
-              <span className="text-[10px] uppercase text-slate-400 font-semibold block">
-                SEAT NUMBER
-              </span>
-              <span className="font-mono font-black text-2xl text-[#1EA83C]">
+          {/* Details Grid */}
+          <div className="grid grid-cols-3 gap-2 text-xs">
+            <div className="bg-slate-50 rounded-xl p-2.5 text-center border border-slate-100">
+              <Ticket className="w-3.5 h-3.5 mx-auto text-[#F84464] mb-1" />
+              <span className="text-[10px] text-slate-400 block">SEAT</span>
+              <span className="font-black text-[#222433] text-base font-mono">
                 {booking.seatId}
               </span>
-              <span className="text-[11px] text-slate-500 block">
-                {booking.tier} Tier
-              </span>
             </div>
-            <div>
-              <span className="text-[10px] uppercase text-slate-400 font-semibold block">
-                SHOWTIME
-              </span>
-              <span className="font-bold text-sm text-[#222433] block">
-                Today, {selectedShowtime || "07:30 PM"}
-              </span>
-              <span className="text-[11px] text-emerald-600 font-bold block">
-                ₹{booking.price}.00 Paid
-              </span>
+            <div className="bg-slate-50 rounded-xl p-2.5 text-center border border-slate-100">
+              <Clock className="w-3.5 h-3.5 mx-auto text-indigo-500 mb-1" />
+              <span className="text-[10px] text-slate-400 block">TIME</span>
+              <span className="font-bold text-[#222433] text-[11px]">{selectedShowtime || "07:30 PM"}</span>
+            </div>
+            <div className="bg-slate-50 rounded-xl p-2.5 text-center border border-slate-100">
+              <Calendar className="w-3.5 h-3.5 mx-auto text-emerald-500 mb-1" />
+              <span className="text-[10px] text-slate-400 block">DATE</span>
+              <span className="font-bold text-[#222433] text-[11px]">{dateStr}</span>
             </div>
           </div>
 
-          {/* QR Code Entry Pass */}
-          <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-4 flex items-center justify-between gap-4">
+          {/* Tier & Price Row */}
+          <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200">
             <div>
+              <p className="text-[10px] text-emerald-600 font-semibold">{booking.tier} Tier</p>
+              <p className="font-black text-emerald-800 text-base">₹{booking.price}.00</p>
+            </div>
+            <div className="flex items-center gap-1 text-emerald-600 text-[11px] font-bold">
+              <CheckCircle className="w-4 h-4" />
+              <span>Paid & Confirmed</span>
+            </div>
+          </div>
+
+          {/* QR Code & Booking ID */}
+          <div className="rounded-2xl bg-white border-2 border-slate-100 p-4 flex items-center gap-4 shadow-xs">
+            {/* Mini QR pattern */}
+            <div className="w-16 h-16 shrink-0">
+              <div className="grid gap-px" style={{ gridTemplateColumns: "repeat(7, 1fr)" }}>
+                {qrPattern.map((cell, i) => (
+                  <div
+                    key={i}
+                    className="aspect-square"
+                    style={{ backgroundColor: cell ? "#222433" : "#ffffff", borderRadius: 1 }}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
               <span className="text-[9px] text-slate-400 uppercase font-bold block">
                 BOOKING ID / M-TICKET
               </span>
-              <span className="text-xs font-mono font-bold text-[#222433] truncate max-w-[200px] block">
+              <span className="text-[11px] font-mono font-bold text-[#222433] truncate block">
                 {booking.bookingId || "BMS-DURABLE-0x49A"}
               </span>
               <span className="text-[10px] text-emerald-600 flex items-center gap-1 mt-1 font-medium">
-                <CheckCircle className="w-3 h-3" /> Committed to Neon Postgres
+                <Zap className="w-3 h-3" /> Committed to Postgres Ledger
               </span>
             </div>
-            <div className="w-14 h-14 rounded-lg bg-white border border-slate-200 p-1 flex items-center justify-center shrink-0 shadow-xs">
-              <QrCode className="w-full h-full text-black" />
-            </div>
           </div>
+        </div>
 
-          {/* Buttons */}
-          <div className="mt-5 flex items-center gap-3">
-            <button
-              onClick={() => alert("M-Ticket pass saved to your device wallet!")}
-              className="flex-1 py-2.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>Save M-Ticket</span>
-            </button>
+        {/* Ticket Bottom Notch */}
+        <div className="relative flex items-center">
+          <div className="w-6 h-6 rounded-full bg-slate-100 -ml-3 shrink-0 border border-slate-200" />
+          <div className="flex-1 border-t-2 border-dashed border-slate-200 mx-2" />
+          <div className="w-6 h-6 rounded-full bg-slate-100 -mr-3 shrink-0 border border-slate-200" />
+        </div>
 
-            <button
-              onClick={onClose}
-              className="flex-1 py-2.5 rounded-lg bg-[#F84464] hover:bg-[#E03352] text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer"
-            >
-              <span>Book Another Seat</span>
-            </button>
-          </div>
+        {/* Action Buttons */}
+        <div className="px-6 pb-6 pt-3 flex items-center gap-3">
+          <button
+            onClick={handleDownload}
+            className={`flex-1 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold text-xs transition flex items-center justify-center gap-1.5 cursor-pointer ${
+              showDownloadAnim ? "bg-emerald-50 border-emerald-300 text-emerald-700" : "hover:bg-slate-50"
+            }`}
+          >
+            {showDownloadAnim ? (
+              <><CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Saved!</>
+            ) : (
+              <><Download className="w-3.5 h-3.5" /> Download Ticket</>
+            )}
+          </button>
+
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-xl bg-[#F84464] hover:bg-[#E03352] text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5 cursor-pointer"
+          >
+            <Ticket className="w-3.5 h-3.5" />
+            Book Another
+          </button>
         </div>
       </div>
     </div>

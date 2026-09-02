@@ -9,6 +9,8 @@ import SeatMap from "../components/SeatMap";
 import SeatLegend from "../components/SeatLegend";
 import HoldCountdown from "../components/HoldCountdown";
 import BookingModal from "../components/BookingModal";
+import PaymentModal from "../components/PaymentModal";
+import ShowDetailsModal from "../components/ShowDetailsModal";
 import SystemInfoModal from "../components/SystemInfoModal";
 import CitySelectModal from "../components/CitySelectModal";
 import StreamCatalogModal from "../components/StreamCatalogModal";
@@ -38,6 +40,8 @@ export default function Home() {
   const [presenceMap, setPresenceMap] = useState({});
   const [heldSeat, setHeldSeat] = useState(null);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [selectedShowForDetails, setSelectedShowForDetails] = useState(null);
   const [appliedPromo, setAppliedPromo] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
@@ -599,6 +603,7 @@ export default function Home() {
           catalog={catalog}
           activeEventId={activeEventId}
           onSelectEvent={handleSelectEvent}
+          onShowDetails={(show) => setSelectedShowForDetails(show)}
           activeCity={activeCity}
         />
 
@@ -635,7 +640,7 @@ export default function Home() {
           venueInfo={venueInfo}
           selectedShowtime={selectedShowtime}
           appliedPromo={appliedPromo}
-          onConfirmBooking={handleConfirmBooking}
+          onConfirmBooking={() => setIsPaymentModalOpen(true)}
           onReleaseSeat={handleReleaseSeat}
           isSubmitting={isSubmitting}
         />
@@ -646,6 +651,31 @@ export default function Home() {
           venueInfo={venueInfo}
           selectedShowtime={selectedShowtime}
           onClose={() => setConfirmedBooking(null)}
+        />
+
+        {/* Payment Gateway Modal — intercepts checkout before socket confirm */}
+        <PaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+          heldSeat={heldSeat}
+          venueInfo={venueInfo}
+          selectedShowtime={selectedShowtime}
+          appliedPromo={appliedPromo}
+          onPaymentSuccess={(seat) => {
+            setIsPaymentModalOpen(false);
+            handleConfirmBooking(seat);
+          }}
+        />
+
+        {/* Show Details Sheet Modal */}
+        <ShowDetailsModal
+          show={selectedShowForDetails}
+          isOpen={!!selectedShowForDetails}
+          onClose={() => setSelectedShowForDetails(null)}
+          onBookNow={(id) => {
+            handleSelectEvent(id);
+            setSelectedShowForDetails(null);
+          }}
         />
 
         {/* System Architecture Specifications Modal */}
