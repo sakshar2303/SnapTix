@@ -54,6 +54,7 @@ export default function Home() {
 
   // Theatre & Location State
   const [currentTheatre, setCurrentTheatre] = useState(null);
+  const [currentAuditorium, setCurrentAuditorium] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
   const [isDetectingLocation, setIsDetectingLocation] = useState(false);
 
@@ -81,13 +82,20 @@ export default function Home() {
       .catch((err) => console.error("Error fetching catalog:", err));
   }, []);
 
-  // Initialize and synchronize theatre when activeCity changes
+  // Initialize and synchronize theatre and auditorium when activeCity changes
   useEffect(() => {
     const cityTheatres = getTheatresForCity(activeCity);
     if (cityTheatres && cityTheatres.length > 0) {
-      setCurrentTheatre(cityTheatres[0]);
-      if (cityTheatres[0].showtimes && cityTheatres[0].showtimes.length > 0) {
-        setSelectedShowtime(cityTheatres[0].showtimes[0]);
+      const firstTheatre = cityTheatres[0];
+      setCurrentTheatre(firstTheatre);
+      if (firstTheatre.auditoriums && firstTheatre.auditoriums.length > 0) {
+        const firstAudi = firstTheatre.auditoriums[0];
+        setCurrentAuditorium(firstAudi);
+        if (firstAudi.showtimes && firstAudi.showtimes.length > 0) {
+          setSelectedShowtime(firstAudi.showtimes[0]);
+        }
+      } else if (firstTheatre.showtimes && firstTheatre.showtimes.length > 0) {
+        setSelectedShowtime(firstTheatre.showtimes[0]);
       }
     }
   }, [activeCity]);
@@ -111,9 +119,16 @@ export default function Home() {
         setActiveCity(city);
         const cityTheatres = getTheatresForCity(city);
         if (cityTheatres && cityTheatres.length > 0) {
-          setCurrentTheatre(cityTheatres[0]);
-          if (cityTheatres[0].showtimes) {
-            setSelectedShowtime(cityTheatres[0].showtimes[0]);
+          const firstTh = cityTheatres[0];
+          setCurrentTheatre(firstTh);
+          if (firstTh.auditoriums && firstTh.auditoriums.length > 0) {
+            const firstAud = firstTh.auditoriums[0];
+            setCurrentAuditorium(firstAud);
+            if (firstAud.showtimes) {
+              setSelectedShowtime(firstAud.showtimes[0]);
+            }
+          } else if (firstTh.showtimes) {
+            setSelectedShowtime(firstTh.showtimes[0]);
           }
         }
         showToast("success", "GPS Location Detected!", `Nearest Entertainment Hub: ${city} (${distanceKm} km away)`);
@@ -132,10 +147,36 @@ export default function Home() {
 
   const handleSelectTheatre = (theatre) => {
     setCurrentTheatre(theatre);
-    if (theatre.showtimes && theatre.showtimes.length > 0) {
+    if (theatre.auditoriums && theatre.auditoriums.length > 0) {
+      const firstAudi = theatre.auditoriums[0];
+      setCurrentAuditorium(firstAudi);
+      if (firstAudi.showtimes && firstAudi.showtimes.length > 0) {
+        setSelectedShowtime(firstAudi.showtimes[0]);
+      }
+    } else if (theatre.showtimes && theatre.showtimes.length > 0) {
       setSelectedShowtime(theatre.showtimes[0]);
     }
     showToast("success", "Cinema Venue Selected", `${theatre.name} (${theatre.area})`);
+  };
+
+  const handleSelectAuditorium = (audi) => {
+    setCurrentAuditorium(audi);
+    if (audi.showtimes && audi.showtimes.length > 0) {
+      setSelectedShowtime(audi.showtimes[0]);
+    }
+    if (heldSeat) {
+      handleReleaseSeat();
+    }
+    const targetEventId = audi.id === "audi-2-insignia" || audi.id === "audi-1-4dx"
+      ? audi.id
+      : "venue-pvr-imax";
+    setActiveEventId(targetEventId);
+    joinEventRoom(targetEventId, userId);
+    showToast(
+      "success",
+      "Screen Selected",
+      `${audi.name} • ${audi.layoutType === "luxury_couples" ? "Twin Loungers" : audi.layoutType === "quad_pods" ? "4DX Quad Pods" : "Stadium Seating"}`
+    );
   };
 
   // Measure WebSocket ping latency
@@ -557,6 +598,8 @@ export default function Home() {
         <VenueStage
           venueInfo={venueInfo}
           currentTheatre={currentTheatre}
+          currentAuditorium={currentAuditorium}
+          onSelectAuditorium={handleSelectAuditorium}
           onOpenTheatreModal={() => setIsTheatreModalOpen(true)}
           selectedShowtime={selectedShowtime}
           onSelectShowtime={setSelectedShowtime}
@@ -567,9 +610,10 @@ export default function Home() {
         {/* BMS Legend Bar */}
         <SeatLegend />
 
-        {/* BMS Cinema Grid Seat Map */}
+        {/* BMS Cinema Grid Seat Map with Dynamic Layout */}
         <SeatMap
           seats={seats}
+          currentAuditorium={currentAuditorium}
           myUserId={userId}
           onSeatClick={handleSeatClick}
           onSeatHover={handleSeatHover}

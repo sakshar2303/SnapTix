@@ -1,11 +1,13 @@
 "use client";
 
 import React from "react";
-import { Film, Clock, MapPin, Navigation, ExternalLink, ChevronRight } from "lucide-react";
+import { Film, Clock, MapPin, ExternalLink, ChevronRight, Sparkles, MonitorPlay } from "lucide-react";
 
 export default function VenueStage({
   venueInfo,
   currentTheatre,
+  currentAuditorium,
+  onSelectAuditorium,
   onOpenTheatreModal,
   selectedShowtime,
   onSelectShowtime,
@@ -14,12 +16,14 @@ export default function VenueStage({
 }) {
   if (!venueInfo) return null;
 
-  const showtimes = currentTheatre?.showtimes || venueInfo.showtimes || ["07:30 PM"];
+  const auditoriums = currentTheatre?.auditoriums || [];
+  const showtimes = currentAuditorium?.showtimes || currentTheatre?.showtimes || venueInfo.showtimes || ["07:30 PM"];
   const theatreName = currentTheatre?.name || venueInfo.subtitle || venueInfo.cinemaName || "PVR INOX: Phoenix Palladium";
   const theatreArea = currentTheatre?.area || "Lower Parel";
   const theatreDistance = currentTheatre?.distanceKm ? `${currentTheatre.distanceKm} km away` : null;
-  const audiName = currentTheatre?.audi || venueInfo.audiName || "Audi 4 • IMAX with Laser";
+  const audiName = currentAuditorium?.name || currentTheatre?.audi || venueInfo.audiName || "Audi 4 • IMAX with Laser";
   const mapQuery = currentTheatre?.mapQuery || `${theatreName}+${activeCity}`;
+  const audiType = currentAuditorium?.type || "IMAX";
 
   return (
     <div className="w-full max-w-5xl mx-auto mb-4 select-none space-y-2.5">
@@ -35,7 +39,7 @@ export default function VenueStage({
                 {venueInfo.rating || venueInfo.certificate || "UA 16+"}
               </span>
               <span className="px-2 py-0.5 rounded bg-[#F84464]/10 text-[#F84464] border border-[#F84464]/20 text-[10px] font-bold">
-                {venueInfo.format || "IMAX 2D"}
+                {audiType}
               </span>
               <span className="px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 text-[10px] font-bold">
                 {venueInfo.category || "Movies"}
@@ -56,7 +60,7 @@ export default function VenueStage({
             </div>
           </div>
 
-          {/* Showtimes Selector for this specific theatre */}
+          {/* Showtimes Selector for this specific auditorium */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
             {showtimes.map((time) => {
               const isSelected = time === selectedShowtime;
@@ -72,13 +76,54 @@ export default function VenueStage({
                 >
                   <span>{time}</span>
                   <span className={`text-[9px] font-normal ${isSelected ? "text-white/90" : "text-slate-400"}`}>
-                    {venueInfo.format || "IMAX 2D"}
+                    {audiType}
                   </span>
                 </button>
               );
             })}
           </div>
         </div>
+
+        {/* Interactive Auditorium / Screen Switcher Bar */}
+        {auditoriums.length > 1 && (
+          <div className="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+              <MonitorPlay className="w-3.5 h-3.5 text-slate-400" />
+              <span>Select Screen / Auditorium:</span>
+            </div>
+
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+              {auditoriums.map((audi) => {
+                const isSelected = audi.id === currentAuditorium?.id;
+                const isVip = audi.type === "VIP_LOUNGE";
+                const is4DX = audi.type === "4DX";
+
+                let activeClass = "bg-[#00B9F5] text-white border-[#00B9F5]";
+                if (isVip) activeClass = "bg-[#E5A93C] text-slate-900 border-[#E5A93C]";
+                if (is4DX) activeClass = "bg-[#F59E0B] text-white border-[#F59E0B]";
+
+                return (
+                  <button
+                    key={audi.id}
+                    onClick={() => onSelectAuditorium(audi)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shrink-0 border shadow-2xs ${
+                      isSelected
+                        ? activeClass
+                        : "bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200"
+                    }`}
+                  >
+                    <span>{audi.name}</span>
+                    <span className={`text-[10px] px-1 py-0.2 rounded ${
+                      isSelected ? "bg-black/20 text-inherit" : "bg-slate-200 text-slate-600"
+                    }`}>
+                      {audi.totalSeats || 72} seats
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Direct Theatre / Venue Switcher Strip */}
