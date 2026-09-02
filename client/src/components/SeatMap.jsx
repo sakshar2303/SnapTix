@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { Lock, Clock, Eye, Info } from "lucide-react";
+import { Eye, Info } from "lucide-react";
 import { TIERS } from "../lib/constants";
 
 export default function SeatMap({
@@ -11,7 +11,6 @@ export default function SeatMap({
   onSeatHover,
   onSeatLeave,
   presenceMap = {},
-  showHeatmap = true,
 }) {
   const [hoveredSeat, setHoveredSeat] = useState(null);
   const hoverTimeoutRef = useRef(null);
@@ -30,32 +29,25 @@ export default function SeatMap({
     onSeatLeave(seat.id);
   };
 
-  // Group seats by tier to render BookMyShow section headers
-  const sections = [
-    { name: "RECLINER", price: 450, rows: ["A", "B"] },
-    { name: "PRIME", price: 290, rows: ["C", "D", "E"] },
-    { name: "CLASSIC", price: 180, rows: ["F", "G", "H"] },
-  ];
-
   return (
     <div className="relative w-full max-w-5xl mx-auto select-none">
       {/* Interactive Hover Tooltip Strip */}
-      <div className="mb-3 h-10 w-full flex items-center justify-between px-4 py-2 rounded-lg bg-[#252C3B] border border-[#323B4E] text-xs text-slate-300">
+      <div className="mb-3 h-10 w-full flex items-center justify-between px-4 py-2 rounded-lg bg-white border border-slate-200/80 text-xs text-slate-600 shadow-xs">
         {hoveredSeat ? (
           <div className="w-full flex items-center justify-between animate-in fade-in duration-100">
             <div className="flex items-center gap-2">
-              <span className="font-bold text-white text-sm">
+              <span className="font-bold text-[#222433] text-sm">
                 Seat {hoveredSeat.label}
               </span>
               <span className="text-slate-400">({hoveredSeat.section})</span>
-              <span className="font-bold text-[#2DC44D] ml-2">
+              <span className="font-bold text-[#1EA83C] ml-2">
                 ₹{hoveredSeat.price}.00
               </span>
             </div>
 
             <div className="flex items-center gap-3">
               {presenceMap[hoveredSeat.id] > 0 && (
-                <span className="px-2 py-0.5 rounded bg-purple-900/60 border border-purple-400/50 text-purple-300 text-[11px] font-semibold flex items-center gap-1">
+                <span className="px-2 py-0.5 rounded bg-purple-100 border border-purple-300 text-purple-700 text-[11px] font-semibold flex items-center gap-1">
                   <Eye className="w-3 h-3" />
                   <span>{presenceMap[hoveredSeat.id]} viewing</span>
                 </span>
@@ -65,10 +57,10 @@ export default function SeatMap({
                 <strong
                   className={
                     hoveredSeat.status === "booked"
-                      ? "text-slate-500"
+                      ? "text-slate-400"
                       : hoveredSeat.status === "held"
-                      ? "text-amber-400"
-                      : "text-[#2DC44D]"
+                      ? "text-amber-600"
+                      : "text-[#1EA83C]"
                   }
                 >
                   {hoveredSeat.status === "booked"
@@ -81,45 +73,45 @@ export default function SeatMap({
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-2 text-slate-400 text-xs">
+          <div className="flex items-center gap-2 text-slate-500 text-xs">
             <Info className="w-3.5 h-3.5 text-[#00B9F5]" />
-            <span>Click any seat to lock it. Instant confirmation with zero double-booking.</span>
+            <span>Select a seat to reserve it instantly. Zero risk of double-booking.</span>
           </div>
         )}
       </div>
 
-      {/* Main Cinema Seating Canvas */}
-      <div className="w-full rounded-2xl bg-[#1C222F] border border-[#2B3446] p-6 sm:p-8 shadow-xl overflow-hidden">
+      {/* Pure White Cinema Seating Canvas */}
+      <div className="w-full rounded-2xl bg-white border border-slate-200/90 p-6 sm:p-8 shadow-[0_4px_25px_rgba(0,0,0,0.05)] overflow-hidden">
         {/* Tier 1: RECLINER */}
         <div className="mb-6">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider pb-2 mb-3 border-b border-[#2C3648] flex items-center justify-between">
-            <span className="text-[#F84464] font-extrabold">RECLINER - ₹450.00</span>
-            <span className="text-[11px] text-slate-500 font-normal">Motorized Plush Leather</span>
+          <div className="text-xs font-bold text-slate-700 uppercase tracking-wider pb-2 mb-3 border-b border-slate-100 flex items-center justify-between">
+            <span className="text-[#F84464] font-black">RECLINER - ₹450.00</span>
+            <span className="text-[11px] text-slate-400 font-normal">Plush Motorized Leather</span>
           </div>
           {renderRowGroup(["A", "B"])}
         </div>
 
         {/* Tier 2: PRIME */}
         <div className="mb-6">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider pb-2 mb-3 border-b border-[#2C3648] flex items-center justify-between">
-            <span className="text-[#2DC44D] font-extrabold">PRIME - ₹290.00</span>
-            <span className="text-[11px] text-slate-500 font-normal">Optimal Center Field</span>
+          <div className="text-xs font-bold text-slate-700 uppercase tracking-wider pb-2 mb-3 border-b border-slate-100 flex items-center justify-between">
+            <span className="text-[#1EA83C] font-black">PRIME - ₹290.00</span>
+            <span className="text-[11px] text-slate-400 font-normal">Center Acoustic Field</span>
           </div>
           {renderRowGroup(["C", "D", "E"])}
         </div>
 
         {/* Tier 3: CLASSIC */}
         <div className="mb-10">
-          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider pb-2 mb-3 border-b border-[#2C3648] flex items-center justify-between">
-            <span className="text-[#00B9F5] font-extrabold">CLASSIC - ₹180.00</span>
-            <span className="text-[11px] text-slate-500 font-normal">High Back Support</span>
+          <div className="text-xs font-bold text-slate-700 uppercase tracking-wider pb-2 mb-3 border-b border-slate-100 flex items-center justify-between">
+            <span className="text-[#00B9F5] font-black">CLASSIC - ₹180.00</span>
+            <span className="text-[11px] text-slate-400 font-normal">Standard High Back</span>
           </div>
           {renderRowGroup(["F", "G", "H"])}
         </div>
 
         {/* The Iconic BookMyShow Cinema Screen at Bottom */}
-        <div className="mt-12 pt-6 flex flex-col items-center justify-center">
-          <div className="w-4/5 sm:w-3/5 h-4 border-t-4 border-[#00B9F5] rounded-t-[100px] shadow-[0_-10px_20px_rgba(0,185,245,0.3)]"></div>
+        <div className="mt-10 pt-6 flex flex-col items-center justify-center">
+          <div className="w-4/5 sm:w-3/5 h-3 border-t-4 border-[#00B9F5] rounded-t-[100px] shadow-[0_-8px_15px_rgba(0,185,245,0.2)]"></div>
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mt-2">
             All eyes this way please! Screen this way
           </p>
@@ -133,7 +125,6 @@ export default function SeatMap({
       <div className="space-y-3">
         {rowLetters.map((rowLetter) => {
           const rowSeats = seats.filter((s) => s.row === rowLetter);
-          // Split into 3 columns (left 3, center 3, right 3) for the aisles
           const leftCol = rowSeats.filter((s) => s.col <= 3);
           const centerCol = rowSeats.filter((s) => s.col >= 4 && s.col <= 6);
           const rightCol = rowSeats.filter((s) => s.col >= 7);
@@ -141,7 +132,7 @@ export default function SeatMap({
           return (
             <div key={rowLetter} className="flex items-center justify-center gap-2 sm:gap-4">
               {/* Left Row Letter */}
-              <span className="w-5 text-center text-xs font-bold text-slate-500 font-mono">
+              <span className="w-5 text-center text-xs font-bold text-slate-400 font-mono">
                 {rowLetter}
               </span>
 
@@ -167,7 +158,7 @@ export default function SeatMap({
               </div>
 
               {/* Right Row Letter */}
-              <span className="w-5 text-center text-xs font-bold text-slate-500 font-mono">
+              <span className="w-5 text-center text-xs font-bold text-slate-400 font-mono">
                 {rowLetter}
               </span>
             </div>
@@ -184,17 +175,16 @@ export default function SeatMap({
     const isAvailable = seat.status === "available";
     const viewerCount = presenceMap[seat.id] || 0;
 
-    let boxStyles = "bg-white border-[#2DC44D] text-[#2DC44D] hover:bg-[#2DC44D] hover:text-white cursor-pointer";
+    let boxStyles = "bg-white border-[#2DC44D] text-[#1EA83C] hover:bg-[#1EA83C] hover:text-white cursor-pointer";
 
     if (isBooked) {
-      boxStyles = "bg-[#2C3446] border-[#364056] text-slate-600 cursor-not-allowed opacity-50";
+      boxStyles = "bg-[#EEEEEE] border-slate-200 text-slate-300 cursor-not-allowed";
     } else if (isMine) {
-      boxStyles = "bg-[#2DC44D] border-[#2DC44D] text-white font-black shadow-lg shadow-emerald-900/50 bms-selected-seat cursor-pointer";
+      boxStyles = "bg-[#1EA83C] border-[#1EA83C] text-white font-black shadow-md bms-selected-seat cursor-pointer";
     } else if (isHeldByOther) {
-      boxStyles = "bg-amber-500/20 border-amber-500 text-amber-300 cursor-not-allowed";
+      boxStyles = "bg-amber-100 border-amber-400 text-amber-700 cursor-not-allowed";
     } else if (isAvailable) {
-      // Classic BMS style: clean white box with light border or tier color border
-      boxStyles = "bg-transparent border-[#404C63] text-slate-200 hover:border-[#2DC44D] hover:bg-[#2DC44D]/10 cursor-pointer";
+      boxStyles = "bg-white border-[#2DC44D] text-[#1EA83C] hover:bg-[#1EA83C] hover:text-white cursor-pointer shadow-2xs";
     }
 
     return (
@@ -220,7 +210,7 @@ export default function SeatMap({
 
         {/* Active Countdown Tag on User's Held Seat */}
         {isMine && seat.ttlSeconds > 0 && (
-          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-1 py-0.2 rounded bg-[#2DC44D] text-white text-[9px] font-bold shadow pointer-events-none whitespace-nowrap">
+          <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 px-1 py-0.2 rounded bg-[#1EA83C] text-white text-[9px] font-bold shadow-xs pointer-events-none whitespace-nowrap">
             {Math.floor(seat.ttlSeconds / 60)}:{(seat.ttlSeconds % 60).toString().padStart(2, "0")}
           </div>
         )}

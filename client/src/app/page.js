@@ -368,7 +368,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#1F2533] text-slate-100 pb-28">
+    <div className="min-h-screen flex flex-col bg-[#F5F5FA] text-[#222433] pb-28">
       {/* BookMyShow Header */}
       <Header
         userId={userId}
@@ -432,12 +432,12 @@ export default function Home() {
       </main>
 
       {/* BookMyShow Footer */}
-      <footer className="w-full border-t border-[#2B3446] bg-[#141822] py-6 px-4 text-center text-xs text-slate-500">
+      <footer className="w-full border-t border-slate-200 bg-white py-6 px-4 text-center text-xs text-slate-500">
         <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
-          <span className="font-semibold text-slate-400">
+          <span className="font-semibold text-slate-600">
             SnapTix • Live Concurrency-Safe Cinema Booking Engine
           </span>
-          <span className="text-[11px] text-slate-500 font-mono">
+          <span className="text-[11px] text-slate-400 font-mono">
             Powered by Redis SET NX EX • Neon Postgres ACID Ledger • Socket.io
           </span>
         </div>

@@ -39,10 +39,10 @@ export default function Header({
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-[#1F2533] border-b border-[#2C3446] shadow-md">
+    <header className="sticky top-0 z-40 w-full bg-[#333545] border-b border-[#292B38] shadow-md">
       {/* Top Primary Bar */}
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-        {/* BookMyShow Brand Logo */}
+        {/* Brand Logo */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5 cursor-pointer">
             <div className="w-8 h-8 rounded-lg bg-[#F84464] flex items-center justify-center shadow-md">
@@ -55,34 +55,34 @@ export default function Header({
           </div>
 
           {/* City Selector */}
-          <div className="hidden sm:flex items-center gap-1 text-xs text-slate-300 hover:text-white font-medium cursor-pointer px-2 py-1 rounded bg-[#272F40] border border-[#353F54]">
+          <div className="hidden sm:flex items-center gap-1 text-xs text-slate-200 hover:text-white font-medium cursor-pointer px-2.5 py-1.5 rounded bg-[#404356] border border-[#4F5268]">
             <span>{city}</span>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            <ChevronDown className="w-3.5 h-3.5 text-slate-300" />
           </div>
         </div>
 
-        {/* Search Bar Simulation */}
+        {/* Crisp Search Bar */}
         <div className="hidden md:flex flex-1 max-w-md mx-4 relative">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             readOnly
             value="Search for Movies, Events, Plays, Sports and Activities"
-            className="w-full pl-9 pr-4 py-1.5 rounded-md bg-[#2C3446] text-xs text-slate-400 border border-[#3A455C] focus:outline-none cursor-default"
+            className="w-full pl-9 pr-4 py-1.5 rounded-md bg-[#FFFFFF] text-xs text-[#222433] placeholder-slate-400 border border-slate-300 focus:outline-none cursor-default shadow-xs"
           />
         </div>
 
         {/* Live Concurrency & Booking Controls */}
         <div className="flex items-center gap-2.5 text-xs">
           {/* Live Socket Latency */}
-          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#131823] border border-[#2B3447] text-slate-300">
+          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#252733] text-slate-200 border border-[#404356]">
             <Radio className={`w-3 h-3 ${isConnected ? "text-emerald-400 animate-pulse" : "text-rose-400"}`} />
-            <span className="text-slate-400 text-[11px]">Live Socket:</span>
+            <span className="text-slate-400 text-[11px]">Socket:</span>
             <span className="font-bold text-emerald-400 text-[11px]">{isConnected ? `${latency}ms` : "Offline"}</span>
           </div>
 
           {/* Velocity Counter */}
-          <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#131823] border border-[#2B3447] text-slate-300">
+          <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#252733] text-slate-200 border border-[#404356]">
             <Activity className="w-3 h-3 text-[#F84464]" />
             <span className="text-slate-400 text-[11px]">Velocity:</span>
             <span className="font-bold text-white text-[11px]">{velocity} booked</span>
@@ -92,18 +92,18 @@ export default function Header({
           <button
             onClick={onSimulateRace}
             disabled={isSimulating}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#F84464] hover:bg-[#E03352] text-white font-bold text-xs shadow-sm transition active:scale-95"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#F84464] hover:bg-[#E03352] text-white font-bold text-xs shadow-sm transition active:scale-95 cursor-pointer"
             title="Simulate 10 simultaneous concurrent booking attempts on the same seat"
           >
             <Zap className={`w-3.5 h-3.5 ${isSimulating ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">{isSimulating ? "Racing..." : "Test Concurrency Race"}</span>
+            <span className="hidden sm:inline">{isSimulating ? "Racing..." : "Test Race"}</span>
             <span className="sm:hidden">Race</span>
           </button>
 
           {/* Concurrency Architecture Specs */}
           <button
             onClick={onOpenSystemInfo}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[#2C3446] hover:bg-[#384258] text-slate-200 text-xs font-semibold transition border border-[#3A455C]"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[#404356] hover:bg-[#4E5269] text-slate-200 hover:text-white text-xs font-semibold transition border border-[#4F5268]"
           >
             <ShieldCheck className="w-3.5 h-3.5 text-[#00B9F5]" />
             <span className="hidden sm:inline">Proof</span>
@@ -113,14 +113,14 @@ export default function Header({
           <button
             onClick={handleResetClick}
             disabled={resetting}
-            className="p-1.5 rounded-md bg-[#2C3446] hover:bg-[#384258] text-slate-300 hover:text-rose-400 transition border border-[#3A455C]"
+            className="p-1.5 rounded-md bg-[#404356] hover:bg-[#4E5269] text-slate-300 hover:text-rose-400 transition border border-[#4F5268]"
             title="Reset seat inventory"
           >
             <RotateCcw className={`w-3.5 h-3.5 ${resetting ? "animate-spin" : ""}`} />
           </button>
 
           {/* User Profile Pill */}
-          <div className="flex items-center gap-2 pl-2 border-l border-[#2C3446]">
+          <div className="flex items-center gap-2 pl-2 border-l border-[#404356]">
             <div className="w-7 h-7 rounded-full bg-[#F84464]/20 border border-[#F84464]/40 flex items-center justify-center text-xs font-bold text-[#F84464]">
               <User className="w-3.5 h-3.5" />
             </div>
@@ -133,10 +133,10 @@ export default function Header({
       </div>
 
       {/* BookMyShow Secondary Navigation Strip */}
-      <div className="bg-[#191F2C] border-t border-[#262E3E] hidden md:block">
+      <div className="bg-[#1F2533] border-t border-[#171C26] hidden md:block">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 h-10 flex items-center justify-between text-xs text-slate-300">
-          <div className="flex items-center gap-6">
-            <span className="font-semibold text-white cursor-pointer hover:text-[#F84464] transition">Movies</span>
+          <div className="flex items-center gap-6 font-medium">
+            <span className="text-white cursor-pointer hover:text-[#F84464] transition">Movies</span>
             <span className="cursor-pointer hover:text-[#F84464] transition">Stream</span>
             <span className="cursor-pointer hover:text-[#F84464] transition">Events</span>
             <span className="cursor-pointer hover:text-[#F84464] transition">Plays</span>
