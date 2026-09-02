@@ -360,6 +360,11 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Latency Ping-Pong Handler
+  socket.on("ping_latency", (callback) => {
+    if (callback) callback();
+  });
+
   // 2. Core Hold Seat Request
   socket.on("hold_seat", async ({ eventId = CONFIG.EVENT_ID, seatId, userId, duration = CONFIG.HOLD_DURATION_SECONDS }, callback) => {
     if (!seatId || !userId) {

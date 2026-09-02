@@ -1,26 +1,73 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg-surface: #07080B;
+    --card-surface: #0E1015;
+    --card-border: rgba(255, 255, 255, 0.08);
+  }
+
+  body {
+    background-color: var(--bg-surface);
+    color: #F1F5F9;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Custom subtle ambient grid & stage illumination */
+.ambient-glow {
+  background: radial-gradient(circle at 50% -10%, rgba(99, 102, 241, 0.15), transparent 65%);
+}
+
+.stage-spotlight {
+  background: radial-gradient(ellipse at 50% 0%, rgba(129, 140, 248, 0.22) 0%, rgba(99, 102, 241, 0.08) 45%, transparent 75%);
+}
+
+/* Custom sleek scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #090B0E;
+}
+::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Glass panel utility */
+.glass-panel {
+  background: rgba(14, 17, 24, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.glass-panel-elevated {
+  background: rgba(18, 22, 32, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7), 0 0 30px -10px rgba(99, 102, 241, 0.15);
+}
+
+/* Seat hover pulse */
+@keyframes seat-pulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px rgba(56, 189, 248, 0.8));
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 1));
+  }
+}
+
+.animate-seat-hold {
+  animation: seat-pulse 2s infinite ease-in-out;
 }

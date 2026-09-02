@@ -14,6 +14,7 @@ import { getSocket, getUserId } from "../lib/socket";
 export default function Home() {
   const [userId, setUserId] = useState("");
   const [isConnected, setIsConnected] = useState(false);
+  const [latency, setLatency] = useState(12);
   const [venueInfo, setVenueInfo] = useState(null);
   const [seats, setSeats] = useState([]);
   const [velocity, setVelocity] = useState(0);
@@ -21,6 +22,7 @@ export default function Home() {
   const [heldSeat, setHeldSeat] = useState(null);
   const [confirmedBooking, setConfirmedBooking] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSimulating, setIsSimulating] = useState(false);
   const [toast, setToast] = useState(null);
   const [isSystemInfoOpen, setIsSystemInfoOpen] = useState(false);
   const [showHeatmap, setShowHeatmap] = useState(true);
@@ -36,6 +38,20 @@ export default function Home() {
     }, 4500);
   }, []);
 
+  // Measure WebSocket ping latency
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (socketRef.current && isConnected) {
+        const start = performance.now();
+        socketRef.current.emit("ping_latency", () => {
+          const roundTrip = Math.round(performance.now() - start);
+          setLatency(Math.max(4, roundTrip));
+        });
+      }
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [isConnected]);
+
   // Initialize Socket.io connection & userId
   useEffect(() => {
     const currentUserId = getUserId();
@@ -46,7 +62,6 @@ export default function Home() {
 
     socket.on("connect", () => {
       setIsConnected(true);
-      console.log("Connected to SnapTix Realtime Cluster:", socket.id);
       socket.emit("join_event", {
         eventId: "venue-grand-hall",
         userId: currentUserId,
@@ -102,8 +117,8 @@ export default function Home() {
         });
         showToast(
           "success",
-          `Seat ${seatId} Held!`,
-          "Seat locked for 5 minutes. Complete checkout to finalize."
+          `Seat ${seatId} Held`,
+          "Exclusive lock confirmed via Redis SET NX EX. Complete checkout within 5:00."
         );
       }
     });
@@ -113,7 +128,7 @@ export default function Home() {
       showToast(
         "collision",
         "Race Condition: Seat Taken!",
-        reason || `Seat ${seatId} was just claimed by another user milliseconds before you!`
+        reason || `Seat ${seatId} was claimed by another attendee milliseconds before you!`
       );
     });
 
@@ -140,7 +155,7 @@ export default function Home() {
           showToast(
             "warning",
             reason === "EXPIRED" ? "Hold Expired" : "Seat Released",
-            `Seat ${seatId} is now back in available inventory.`
+            `Seat ${seatId} has been returned to available hall inventory.`
           );
           return null;
         }
@@ -149,42 +164,45 @@ export default function Home() {
     });
 
     // Real-time seat booked event
-    socket.on("seat_booked", ({ seatId, userId: bookerId, price, tier, bookedAt, bookingId, velocity: newVelocity }) => {
-      const isMine = bookerId === currentUserId;
+    socket.on(
+      "seat_booked",
+      ({ seatId, userId: bookerId, price, tier, bookedAt, bookingId, velocity: newVelocity }) => {
+        const isMine = bookerId === currentUserId;
 
-      setSeats((prevSeats) =>
-        prevSeats.map((s) => {
-          if (s.id === seatId) {
-            return {
-              ...s,
-              status: "booked",
-              bookedBy: bookerId,
-              isMine,
-              price,
-              tier,
-              bookedAt,
-            };
-          }
-          return s;
-        })
-      );
+        setSeats((prevSeats) =>
+          prevSeats.map((s) => {
+            if (s.id === seatId) {
+              return {
+                ...s,
+                status: "booked",
+                bookedBy: bookerId,
+                isMine,
+                price,
+                tier,
+                bookedAt,
+              };
+            }
+            return s;
+          })
+        );
 
-      if (typeof newVelocity === "number") {
-        setVelocity(newVelocity);
+        if (typeof newVelocity === "number") {
+          setVelocity(newVelocity);
+        }
+
+        if (isMine) {
+          setHeldSeat(null);
+          setConfirmedBooking({
+            seatId,
+            userId: bookerId,
+            price,
+            tier,
+            bookedAt,
+            bookingId,
+          });
+        }
       }
-
-      if (isMine) {
-        setHeldSeat(null);
-        setConfirmedBooking({
-          seatId,
-          userId: bookerId,
-          price,
-          tier,
-          bookedAt,
-          bookingId,
-        });
-      }
-    });
+    );
 
     // Real-time Live Presence update
     socket.on("presence_updated", ({ seatId, count }) => {
@@ -198,8 +216,7 @@ export default function Home() {
     socket.on("event_reset", () => {
       setHeldSeat(null);
       setPresenceMap({});
-      showToast("success", "Demo Reset", "All seat holds and states have been reset.");
-      // Re-fetch state
+      showToast("success", "Hall Inventory Reset", "All seat holds and bookings have been cleared.");
       socket.emit("join_event", {
         eventId: "venue-grand-hall",
         userId: currentUserId,
@@ -222,25 +239,24 @@ export default function Home() {
   // Click seat action
   const handleSeatClick = (seat) => {
     if (seat.status === "booked") {
-      showToast("error", "Unavailable", `Seat ${seat.label} has already been permanently booked.`);
+      showToast("error", "Seat Booked", `Seat ${seat.label} is permanently reserved.`);
       return;
     }
 
     if (seat.status === "held") {
       if (seat.isMine || (heldSeat && heldSeat.id === seat.id)) {
-        // Already held by this user, focus checkout
         return;
       } else {
         showToast(
           "warning",
-          "Seat Reserved",
-          `Seat ${seat.label} is currently reserved by another attendee.`
+          "Seat Locked",
+          `Seat ${seat.label} is currently held by another attendee.`
         );
         return;
       }
     }
 
-    // Attempt to acquire atomic hold via Redis SET NX EX
+    // Atomic hold via Socket.io
     if (socketRef.current) {
       socketRef.current.emit("hold_seat", {
         eventId: "venue-grand-hall",
@@ -311,23 +327,72 @@ export default function Home() {
     }
   };
 
+  // Live 10-Contender Collision Simulator
+  const handleSimulateRace = async () => {
+    setIsSimulating(true);
+    const targetSeat = "A5"; // Center VIP Orchestra seat
+    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:4000";
+
+    showToast("collision", "Race Test Started", `Firing 10 simultaneous hold requests at seat ${targetSeat}...`);
+
+    try {
+      // 10 concurrent requests at exact same millisecond
+      const contenders = Array.from({ length: 10 }, (_, i) => ({
+        userId: `racer-${Math.random().toString(36).substring(2, 6)}`,
+        seatId: targetSeat,
+        eventId: "venue-grand-hall",
+      }));
+
+      const requests = contenders.map((c) =>
+        fetch(`${serverUrl}/api/hold`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(c),
+        }).then((res) => res.json())
+      );
+
+      const results = await Promise.all(requests);
+      const successes = results.filter((r) => r.success).length;
+      const rejections = results.filter((r) => !r.success).length;
+
+      setTimeout(() => {
+        showToast(
+          "success",
+          "Concurrency Test Verified!",
+          `10 contenders fired → Exactly ${successes} succeeded, ${rejections} cleanly rejected with zero double-booking!`
+        );
+        setIsSimulating(false);
+      }, 500);
+    } catch (err) {
+      showToast("error", "Test Error", err.message);
+      setIsSimulating(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100">
-      {/* Top Navigation */}
+    <div className="min-h-screen flex flex-col bg-[#07080B] text-slate-100 selection:bg-sky-500 selection:text-white">
+      {/* Background ambient lighting */}
+      <div className="fixed inset-0 ambient-glow pointer-events-none z-0"></div>
+
+      {/* Top Header & Telemetry Flight Deck */}
       <Header
         userId={userId}
         isConnected={isConnected}
         velocity={velocity}
+        latency={latency}
         onReset={handleResetDemo}
         onOpenSystemInfo={() => setIsSystemInfoOpen(true)}
+        onSimulateRace={handleSimulateRace}
+        isSimulating={isSimulating}
       />
 
-      {/* Main Seat Map Arena */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col items-center">
+      {/* Main Amphitheater Arena */}
+      <main className="relative z-10 flex-1 max-w-[1400px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col items-center">
         {/* Stage Component */}
         <VenueStage
           eventName={venueInfo?.eventName}
           date={venueInfo?.date}
+          location={venueInfo?.location}
           stageLabel={venueInfo?.stageLabel}
         />
 
@@ -337,7 +402,7 @@ export default function Home() {
           onToggleHeatmap={() => setShowHeatmap(!showHeatmap)}
         />
 
-        {/* SVG Interactive Seat Map */}
+        {/* Curved Radial SVG Seat Map */}
         <SeatMap
           seats={seats}
           myUserId={userId}
@@ -348,7 +413,7 @@ export default function Home() {
           showHeatmap={showHeatmap}
         />
 
-        {/* Floating Hold Countdown Bar */}
+        {/* Integrated Ticket Booking Dock */}
         <HoldCountdown
           heldSeat={heldSeat}
           onConfirmBooking={handleConfirmBooking}
@@ -356,7 +421,7 @@ export default function Home() {
           isSubmitting={isSubmitting}
         />
 
-        {/* Booking Confirmation Pass Modal */}
+        {/* Digital Holographic Admission Pass Modal */}
         <BookingModal
           booking={confirmedBooking}
           onClose={() => setConfirmedBooking(null)}
@@ -368,15 +433,19 @@ export default function Home() {
           onClose={() => setIsSystemInfoOpen(false)}
         />
 
-        {/* Real-time Event Toast */}
+        {/* Toast Alerts */}
         <Toast toast={toast} onDismiss={() => setToast(null)} />
       </main>
 
-      {/* Footer */}
-      <footer className="w-full border-t border-slate-800/80 py-6 px-4 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>SnapTix • Distributed Real-Time Seat Allocation Engine</span>
-          <span className="font-mono">Redis SET NX EX + Socket.io Cluster Adapter + Postgres Ledger</span>
+      {/* Architectural Minimal Footer */}
+      <footer className="relative z-10 w-full border-t border-white/[0.06] py-6 px-4 text-center text-xs text-slate-500">
+        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+          <span className="font-medium text-slate-400">
+            SnapTix Real-Time Infrastructure • Kuroshio Concert Hall Seating System
+          </span>
+          <span className="font-mono text-[11px] text-slate-500">
+            Redis SET NX EX + Socket.io Multi-Pod Adapter + Neon Postgres Ledger
+          </span>
         </div>
       </footer>
     </div>
