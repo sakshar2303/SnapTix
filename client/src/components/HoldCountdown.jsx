@@ -21,8 +21,8 @@ export default function HoldCountdown({
 }) {
   const [secondsLeft, setSecondsLeft] = useState(0);
 
-  // Timer for the oldest held seat's expiry
-  const primaryHeld = heldSeats.length > 0 ? heldSeats[0] : heldSeat;
+  // Timer uses heldSeat (server-provided, has expiresAt) not heldSeats[0] (local cart, no expiresAt)
+  const primaryHeld = heldSeat;
 
   useEffect(() => {
     if (!primaryHeld || !primaryHeld.expiresAt) return;
@@ -197,7 +197,7 @@ export default function HoldCountdown({
 
           <button
             onClick={() => onConfirmBooking({ ...activeSeats[0], price: finalPrice })}
-            disabled={isSubmitting || secondsLeft <= 0}
+            disabled={isSubmitting || (secondsLeft <= 0 && heldSeats.length === 0 && !heldSeat)}
             className="flex-1 sm:flex-none px-8 py-2.5 rounded-lg bg-[#F84464] hover:bg-[#E03352] text-white font-bold text-sm shadow-md transition transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
           >
             {isSubmitting ? (
