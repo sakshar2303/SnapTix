@@ -13,7 +13,9 @@ import {
   Activity,
   Calendar,
   Sparkles,
+  Cpu,
 } from "lucide-react";
+import Link from "next/link";
 import SnapTixLogo from "./SnapTixLogo";
 
 export default function Header({
@@ -145,52 +147,17 @@ export default function Header({
           )}
         </div>
 
-        {/* Live Concurrency & Booking Controls */}
-        <div className="flex items-center gap-2.5 text-xs">
-          {/* Live Socket Latency */}
-          <div className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#252733] text-slate-200 border border-[#404356]">
-            <Radio className={`w-3 h-3 ${isConnected ? "text-emerald-400 animate-pulse" : "text-rose-400"}`} />
-            <span className="text-slate-400 text-[11px]">Socket:</span>
-            <span className="font-bold text-emerald-400 text-[11px]">{isConnected ? `${latency}ms` : "Offline"}</span>
-          </div>
-
-          {/* Velocity Counter */}
-          <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#252733] text-slate-200 border border-[#404356]">
-            <Activity className="w-3 h-3 text-[#F84464]" />
-            <span className="text-slate-400 text-[11px]">Velocity:</span>
-            <span className="font-bold text-white text-[11px]">{velocity} booked</span>
-          </div>
-
-          {/* 10-Contender Race Test Button */}
-          <button
-            onClick={onSimulateRace}
-            disabled={isSimulating}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#F84464] hover:bg-[#E03352] text-white font-bold text-xs shadow-sm transition active:scale-95 cursor-pointer"
-            title="Simulate 10 simultaneous concurrent booking attempts on the same seat"
+        {/* Clean Consumer Right Action Bar: Ops Console & Profile */}
+        <div className="flex items-center gap-3 text-xs">
+          {/* Direct Link to Dedicated Admin & Systems Ops Console */}
+          <Link
+            href="/admin"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#404356] hover:bg-[#4E526A] text-slate-200 hover:text-white text-xs font-semibold transition border border-[#4F5268]"
+            title="Open dedicated Admin & Concurrency Ops Console"
           >
-            <Zap className={`w-3.5 h-3.5 ${isSimulating ? "animate-spin" : ""}`} />
-            <span className="hidden sm:inline">{isSimulating ? "Racing..." : "Test Race"}</span>
-            <span className="sm:hidden">Race</span>
-          </button>
-
-          {/* Concurrency Architecture Specs */}
-          <button
-            onClick={onOpenSystemInfo}
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md bg-[#404356] hover:bg-[#4E5269] text-slate-200 hover:text-white text-xs font-semibold transition border border-[#4F5268] cursor-pointer"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-[#00B9F5]" />
-            <span className="hidden sm:inline">Proof</span>
-          </button>
-
-          {/* Reset Demo Button */}
-          <button
-            onClick={handleResetClick}
-            disabled={resetting}
-            className="p-1.5 rounded-md bg-[#404356] hover:bg-[#4E5269] text-slate-300 hover:text-rose-400 transition border border-[#4F5268] cursor-pointer"
-            title="Reset seat inventory"
-          >
-            <RotateCcw className={`w-3.5 h-3.5 ${resetting ? "animate-spin" : ""}`} />
-          </button>
+            <Cpu className="w-3.5 h-3.5 text-[#00B9F5]" />
+            <span className="hidden sm:inline">Ops Console</span>
+          </Link>
 
           {/* Interactive User Profile Pill */}
           <button

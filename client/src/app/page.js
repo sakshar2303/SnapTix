@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
+import Link from "next/link";
 import Header from "../components/Header";
 import VenueStage from "../components/VenueStage";
 import SeatMap from "../components/SeatMap";
@@ -597,9 +598,15 @@ export default function Home() {
           <span className="font-semibold text-slate-600">
             SnapTix • Live Concurrency-Safe Cinema Booking Engine
           </span>
-          <span className="text-[11px] text-slate-400 font-mono">
-            Powered by Redis SET NX EX • Neon Postgres ACID Ledger • Socket.io
-          </span>
+          <div className="flex items-center gap-3 text-[11px]">
+            <span className="text-slate-400 font-mono">
+              Powered by Redis SET NX EX • Neon Postgres • Socket.io
+            </span>
+            <span>•</span>
+            <Link href="/admin" className="text-indigo-600 font-semibold hover:underline flex items-center gap-1">
+              <span>Ops Console &rarr;</span>
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
