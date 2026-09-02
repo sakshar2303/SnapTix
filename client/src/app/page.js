@@ -18,6 +18,7 @@ import ListYourShowModal from "../components/ListYourShowModal";
 import CorporatesModal from "../components/CorporatesModal";
 import TheatreSelectModal from "../components/TheatreSelectModal";
 import UserProfileModal from "../components/UserProfileModal";
+import ProfileSidebar from "../components/ProfileSidebar";
 import Toast from "../components/Toast";
 import { getSocket, getUserId } from "../lib/socket";
 import { getTheatresForCity, findClosestCity } from "../lib/theatres";
@@ -50,6 +51,7 @@ export default function Home() {
   const [isListYourShowModalOpen, setIsListYourShowModalOpen] = useState(false);
   const [isCorporatesModalOpen, setIsCorporatesModalOpen] = useState(false);
   const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
+  const [isProfileSidebarOpen, setIsProfileSidebarOpen] = useState(false);
   const [isSystemInfoOpen, setIsSystemInfoOpen] = useState(false);
   const [isTheatreModalOpen, setIsTheatreModalOpen] = useState(false);
 
@@ -583,7 +585,7 @@ export default function Home() {
         onOpenGiftCardsModal={() => setIsGiftCardsModalOpen(true)}
         onOpenListYourShowModal={() => setIsListYourShowModalOpen(true)}
         onOpenCorporatesModal={() => setIsCorporatesModalOpen(true)}
-        onOpenUserProfileModal={() => setIsUserProfileModalOpen(true)}
+        onOpenUserProfileModal={() => setIsProfileSidebarOpen(true)}
         onReset={handleResetDemo}
         onOpenSystemInfo={() => setIsSystemInfoOpen(true)}
         onSimulateRace={handleSimulateRace}
@@ -711,7 +713,7 @@ export default function Home() {
           onSubmitSuccess={(msg) => showToast("success", "Corporate Request Registered", msg)}
         />
 
-        {/* Interactive User Profile & Identity Modal */}
+        {/* Interactive User Profile & Identity Modal (legacy, kept for compatibility) */}
         <UserProfileModal
           isOpen={isUserProfileModalOpen}
           userId={userId}
@@ -722,6 +724,14 @@ export default function Home() {
 
         {/* Toast Alerts */}
         <Toast toast={toast} onDismiss={() => setToast(null)} />
+
+        {/* BookMyShow-style Profile & Login Sidebar */}
+        <ProfileSidebar
+          isOpen={isProfileSidebarOpen}
+          onClose={() => setIsProfileSidebarOpen(false)}
+          userId={userId}
+          onSwitchUser={handleSwitchUser}
+        />
       </main>
 
       {/* BookMyShow Footer */}
